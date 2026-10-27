@@ -9,9 +9,9 @@ are the shared libraries the tools and their tests use, shipped with their own t
 | Tool | What it checks |
 | --- | --- |
 | [`shellcheck_md`](shellcheck_md/shellcheck_md.md) | The `bash` and `sh` code blocks in Markdown, run through ShellCheck |
+| [`cli_doc_consistency`](cli_doc_consistency/cli_doc_consistency.md) | A Python command-line tool's doc, held to the options its `argparse` parser defines |
 
-More checks of the same kind are planned, such as one holding a command-line tool's guide to
-the options its `--help` actually offers.
+Both install as pre-commit hooks and run directly from a clone; each section below says how.
 
 ## shellcheck_md
 
@@ -150,6 +150,147 @@ That output is the shipped sample's, from
 - A file named with `--files` is linted as named: the directory and virtualenv pruning that
   `--root` applies does not apply to it, though both kinds of exclude do.
 
+## cli_doc_consistency
+
+A command-line tool's README lists its options once, by hand, and the parser goes on
+changing. An option is added and never documented, or renamed and still documented under
+its old name. cli_doc_consistency reads the `argparse` parser out of each tool's source and
+fails when the doc and the parser disagree. It exits non-zero on a mismatch, so it can fail
+a commit or a build.
+
+It finds every Python file that constructs an `ArgumentParser` (or a subclass whose name
+ends with it) and pairs each with its doc: the `<name>.md` beside it, or, for one file, the
+doc `--doc` names. Then:
+
+- **Every long option is documented, and no other is.** A `--long` option the parser
+  defines but the doc omits fails, and so does one the doc lists that the parser does not
+  define. A doc with no option listing at all fails too, since there would be nothing to
+  compare. Positional arguments and short-only options (`-v` with no long form) are not
+  compared.
+- **A `help=` text does not hand-write its default.** `(default: 5)` typed into a help
+  string prints twice under `ArgumentDefaultsHelpFormatter` and goes stale when the default
+  changes.
+- **A stated Python floor covers the imports.** A docstring, epilog or doc claiming `3.9+`
+  while the module imports `tomllib` (3.11) fails.
+- **Named options only, if you ask.** `--check-positionals` fails any positional argument.
+  It is a style rule rather than drift, so it is off unless you turn it on.
+
+The doc can list the options in either of two shapes, or both:
+
+- **An arguments table:** a Markdown table whose first header cell reads `Argument`,
+  `Option` or `Flag`, with each option's `--name` in the first cell. A `Default` column is
+  read too.
+- **A pasted `--help` block:** a fenced code block holding the tool's `--help` output,
+  starting at its `usage:` line, or at a `$ tool --help` prompt line just above it. Options
+  are read from argparse's `options:` sections and from the argument groups your parser
+  declares.
+
+### Requirements
+
+- Python 3.12 or newer: the package requires it, and the whole repository is tested at
+  3.12. The tool's own guide says 3.11+, the least its source needs; 3.12 is the supported
+  floor. Nothing else: it reads your code with the standard library's `ast`.
+
+### Install as a pre-commit hook
+
+The hook runs whenever a commit stages a Python or Markdown file, since either side can
+drift. pre-commit passes it no file names: it runs once, with the `args` you give it, so a
+staged file named like an option can never be read as one.
+
+When your CLI is documented in your README, which is the common case, give the hook one
+entry per CLI, naming the tool and its doc:
+
+```yaml
+repos:
+  - repo: <repository-url>
+    rev: <tag>
+    hooks:
+      - id: cli-doc-consistency
+        args: [--path, src/pkg/cli.py, --doc, README.md, --no-run-help]
+```
+
+Add one more `- id: cli-doc-consistency` entry, with its own `args`, for each further CLI.
+Drop `--no-run-help` from an entry only to compare the doc's defaults with the live
+`--help`, which runs your code (see *Running your code* below).
+
+The hook's default arguments are `--path . --no-run-help`, which checks every CLI in the
+repository against the `<name>.md` beside it: `<dir>/<name>.py` against `<dir>/<name>.md`.
+That form works only when each CLI has such a file; for a CLI documented only in a README it
+fails with a missing companion doc. Use it, with your own options added, where that holds:
+
+```yaml
+      - id: cli-doc-consistency
+        args: [--path, ., --no-run-help, --check-positionals]
+```
+
+The default arguments never execute the code being checked, even when the checked tree's
+`pyproject.toml`, or one above it, sets `run_help = true`: `--no-run-help` overrides that
+key. pre-commit replaces the default arguments with any `args` you set, so an `args` list
+without `--no-run-help` lets the key, or a `--run-help` you add, run each CLI's `--help`.
+Do that only for code you trust, and not on pull requests you do not.
+
+### Run it directly
+
+From a clone, check every CLI under a folder, or one tool against a README:
+
+```bash
+python3.12 doc-tether/cli_doc_consistency/cli_doc_consistency.py --path src
+python3.12 doc-tether/cli_doc_consistency/cli_doc_consistency.py --path src/tool.py --doc README.md
+```
+
+Or install it, which puts a `cli-doc-consistency` command on the environment's `PATH`:
+
+```bash
+python3.12 -m pip install ./doc-tether
+cli-doc-consistency --path src
+```
+
+A `[tool.cli_doc_consistency]` table in the nearest `pyproject.toml` at or above `--path` can
+hold standing `exclude` paths and turn on `run_help` and `check_positionals`. The nearest
+`pyproject.toml` is the one read whether or not it has the table, so a nested project's file
+without one leaves the check unconfigured there. shellcheck_md differs: it reads the nearest
+`pyproject.toml` that has its table. Exit codes: `0`
+clean, `1` a mismatch, `2` the run could not be trusted: a path that is not a Python CLI, a
+`--doc` with a directory `--path`, or a `pyproject.toml` it could not read. Every option is
+in [`cli_doc_consistency/cli_doc_consistency.md`](cli_doc_consistency/cli_doc_consistency.md),
+and [`cli_doc_consistency/samples/README.md`](cli_doc_consistency/samples/README.md) walks
+through a run on each doc shape.
+
+### Running your code: off by default
+
+By default the check only reads your source, through Python's `ast`, and executes nothing.
+`--run-help` adds one step: it runs `python <tool> --help` for each CLI it finds, from the
+tool's own folder, to read the real defaults and compare them with the ones the doc states.
+That executes the tool's module-level code and whatever its `--help` path runs. Without it,
+a doc that states defaults gets one note saying they were not checked.
+
+`run_help = true` in `[tool.cli_doc_consistency]` turns the same step on, and that
+`pyproject.toml` is normally inside the tree being checked, so **a repository you did not
+write can turn execution on by itself.** To check a tree you do not trust, pass
+`--no-run-help`: it overrides both `--run-help` and the config, and nothing under `--path` is
+executed.
+
+### Known limits
+
+- Only `argparse` is read. A tool built on another parser library is not found.
+- Positional arguments and short-only options are not compared with the doc: an
+  undocumented `-v` or `input` passes. Only options with a `--long` name are.
+- A parser is recognized by its class name: `ArgumentParser`, or a subclass whose name ends
+  with it. A tool whose parser comes from a subclass named otherwise, such as
+  `class SafeParser(argparse.ArgumentParser)`, is skipped by a folder walk, and naming its
+  file in `--path` exits `2`, reporting it is not an argparse CLI.
+- Options are found anywhere in the tool's own file, helpers included, but a call into
+  another module is not followed: options added in a second file are invisible.
+- A hand-written usage line that does not start with `usage:` is not read as a `--help`
+  block; only pasted `--help` output is.
+- An argument group whose title is computed rather than a string literal cannot be matched
+  to its section of a pasted `--help` block. Give it a literal title, or list its options in
+  a table.
+- Only a purely numeric default is compared, and only with `--run-help`. Paths, `None` and
+  defaults described in words are left alone, since docs paraphrase those.
+- Exit codes are compared only when the doc has an `## Exit codes` section, and a missing
+  code is a note, never a failure.
+
 ## Running the tests
 
 The suites need Hypothesis, at the version the `test` extra in `pyproject.toml` pins.
@@ -161,15 +302,19 @@ python3.12 -m pip install './doc-tether[test]'
 
 Each suite then runs from its own folder's test file. Only shellcheck_md's live boundary
 cases run the real ShellCheck, against temporary files and an rc file of their own, and they
-skip when none is on your `PATH`; one more starts a stand-in script in its place:
+skip when none is on your `PATH`; one more starts a stand-in script in its place.
+cli_doc_consistency's live cases run small tools of their own, written to a temporary
+folder, with the interpreter running the suite:
 
 ```bash
 python3.12 doc-tether/shellcheck_md/test_shellcheck_md.py
+python3.12 doc-tether/cli_doc_consistency/test_cli_doc_consistency.py
 python3.12 doc-tether/argv_budget/test_argv_budget.py
 python3.12 doc-tether/bounded_run/test_bounded_run.py
 python3.12 doc-tether/help_formatter/test_help_formatter.py
 python3.12 doc-tether/live_pid_guard/test_live_pid_guard.py
 python3.12 doc-tether/nothing_examined/test_nothing_examined.py
+python3.12 doc-tether/pyproject_config/test_pyproject_config.py
 python3.12 doc-tether/stdio_utf8/test_stdio_utf8.py
 python3.12 doc-tether/venv_prune/test_venv_prune.py
 ```

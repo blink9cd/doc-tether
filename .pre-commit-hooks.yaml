@@ -1,7 +1,7 @@
 ---
-# The hook pre-commit installs from this repository. pre-commit builds a virtualenv from
-# the repository's pyproject.toml, which brings the shellcheck-md command and, through the
-# shellcheck-py dependency, the ShellCheck binary it runs.
+# The hooks pre-commit installs from this repository. pre-commit builds a virtualenv from
+# the repository's pyproject.toml, which brings both commands and, through the
+# shellcheck-py dependency, the ShellCheck binary shellcheck-md runs.
 #
 # pre-commit runs the entry, then the hook's args, then the staged Markdown files. --files
 # takes every value after it, so it must come last: it is the default args rather than part
@@ -14,3 +14,32 @@
   args: [--files]
   language: python
   types: [markdown]
+
+# cli-doc-consistency checks a whole tree, so pre-commit passes it no file names at all
+# (pass_filenames: false): it runs once, over the fixed --path, whenever a staged change
+# touches a Python or Markdown file, since either side of a CLI and its doc can drift. With
+# no staged name ever reaching argv, a file named like an option has no way to become one,
+# which closes the argument-injection channel through file names by design rather than by
+# a closing --files.
+#
+# The default --path . pairs each CLI with the <name>.md beside it, so it needs one for
+# every CLI. A CLI documented in a README needs its own hook entry instead, with args
+# [--path, <the CLI file>, --doc, README.md, --no-run-help]; the README shows the form.
+#
+# The default args never execute the code being checked. The check reads each CLI's
+# source; --run-help would run each CLI's --help to compare the defaults its doc states,
+# and run_help = true in [tool.cli_doc_consistency] turns that on from the nearest
+# pyproject.toml at or above --path, which is the checked tree's own or an ancestor's. A
+# pre-commit run checks whatever a commit or a pull request brings, so --no-run-help is in
+# the default args and beats that key: nothing runs, whatever the tree's config says. To
+# compare live defaults, write your own args (pre-commit replaces the default args, so
+# leaving --no-run-help out of them lets the key or --run-help apply), and do not then run
+# the hook on pull requests you do not trust.
+- id: cli-doc-consistency
+  name: cli-doc-consistency
+  description: Check that each argparse command-line tool's doc matches its options.
+  entry: cli-doc-consistency
+  args: [--path, ., --no-run-help]
+  pass_filenames: false
+  language: python
+  types_or: [python, markdown]

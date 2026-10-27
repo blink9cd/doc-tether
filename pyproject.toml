@@ -1,5 +1,6 @@
-# Declared so that pre-commit, and anyone else, can install the shellcheck-md command from
-# a clone or the git URL. Nothing here is published to a package index.
+# Declared so that pre-commit, and anyone else, can install the shellcheck-md and
+# cli-doc-consistency commands from a clone or the git URL. Nothing here is published to a
+# package index.
 [build-system]
 # 77 is the first setuptools to accept the SPDX `license` string in [project] (PEP 639).
 requires = ["setuptools>=77"]
@@ -8,8 +9,9 @@ build-backend = "setuptools.build_meta"
 [project]
 # The repository's name. The README's title carries it too, so a rename changes both.
 name = "doc-tether"
-version = "0.1.0"
-description = "Checks that keep documentation tethered to the code and commands it describes, starting with shellcheck for the shell fenced in Markdown."
+# A minor release adds a tool; a patch release changes no tool's surface.
+version = "0.2.0"
+description = "Checks that keep documentation tethered to the code and commands it describes: ShellCheck for the shell fenced in Markdown, and a command-line tool's docs held to its argparse definition."
 readme = "README.md"
 license = "AGPL-3.0-or-later"
 # The oldest interpreter the tools are written and type-checked for, not the newest one on
@@ -32,13 +34,15 @@ test = ["hypothesis==6.165.10"]
 # installed doc_tether/shellcheck_md folder, which then puts the library folders installed
 # beside it on sys.path exactly as it does in a clone.
 shellcheck-md = "doc_tether.shellcheck_md.shellcheck_md:main"
+# Likewise for cli_doc_consistency.py, from the installed doc_tether/cli_doc_consistency.
+cli-doc-consistency = "doc_tether.cli_doc_consistency.cli_doc_consistency:main"
 
 [tool.setuptools]
 # Each tool and library is a plain folder with no __init__.py. Mapping the repository root
 # to one namespace package, doc_tether, installs every folder listed below side by side
-# inside it, so the layout a clone has survives installation: shellcheck_md.py finds each
-# library at `<its parent>/<name>`, and bounded_run finds its src/ and stdio_utf8 the same
-# way. One enclosing name rather than each folder at the top level, because a bare
+# inside it, so the layout a clone has survives installation: shellcheck_md.py and
+# cli_doc_consistency.py find each library at `<its parent>/<name>`, and bounded_run finds
+# its src/ and stdio_utf8 the same way. One enclosing name rather than each folder at the top level, because a bare
 # `stdio_utf8/` in site-packages would make `import stdio_utf8` anywhere in that
 # environment resolve to an empty namespace package instead of failing. Left to
 # auto-discovery, setuptools refuses this flat layout of sibling folders outright. The test
@@ -49,6 +53,9 @@ packages = [
   "doc_tether",
   "doc_tether.shellcheck_md",
   "doc_tether.shellcheck_md.src",
+  "doc_tether.cli_doc_consistency",
+  "doc_tether.cli_doc_consistency.src",
+  "doc_tether.pyproject_config",
   "doc_tether.bounded_run",
   "doc_tether.bounded_run.src",
   "doc_tether.stdio_utf8",
@@ -90,6 +97,9 @@ disallow_incomplete_defs = true
 mypy_path = [
   "$MYPY_CONFIG_FILE_DIR/shellcheck_md",
   "$MYPY_CONFIG_FILE_DIR/shellcheck_md/src",
+  "$MYPY_CONFIG_FILE_DIR/cli_doc_consistency",
+  "$MYPY_CONFIG_FILE_DIR/cli_doc_consistency/src",
+  "$MYPY_CONFIG_FILE_DIR/pyproject_config",
   "$MYPY_CONFIG_FILE_DIR/bounded_run",
   "$MYPY_CONFIG_FILE_DIR/bounded_run/src",
   "$MYPY_CONFIG_FILE_DIR/stdio_utf8",
@@ -121,12 +131,14 @@ terms = [
 ]
 exclude = ["LICENSE"]
 
-# Shapes no single word can express: a backlog number, and the standards file and notes
-# folder of that larger repository. Each is a pointer that resolves for no reader of this one.
+# Shapes no single word can express: a backlog number, a development-task label, and the
+# standards file and notes folder of that larger repository. Each is a pointer that resolves
+# for no reader of this one.
 [tool.prose_terms.patterns]
 item-tag = '(?<![0-9A-Za-z_])items?\s+\d+'  # prose: ignore[item-tag] the declaration itself
 agents-file = '(?<![0-9A-Za-z_])AGENTS\.md'  # prose: ignore[agents-file] the declaration itself
 docs-path = '(?<![0-9A-Za-z_./])docs/'  # prose: ignore[docs-path] the declaration itself
+task-tag = '(?<![0-9A-Za-z_])Task [A-Z][0-9]+'  # prose: ignore[task-tag] the declaration itself
 
 [tool.dep_audit]
 # Pinning checks only in the inner loop; the network audit is run on demand.
@@ -142,8 +154,20 @@ exclude = ["LICENSE"]
 # nest_child.py, and a human can run either by hand to watch the bound hold. Each is an
 # INPUT a test drives, not a module of the library -- and each does its work at import,
 # gc_child.py never exiting and nest_child.py waiting on it, so neither could be imported
-# by a paired test even in principle.
-exclude = ["bounded_run/samples"]
+# by a paired test even in principle. cli_doc_consistency's samples are two fake CLIs, each
+# drifting from its doc on purpose so a by-hand run shows a real catch; they are inputs to
+# that tool, with no test of their own to pair.
+exclude = ["bounded_run/samples", "cli_doc_consistency/samples"]
+
+# This repository holds itself to its own check, so the command-line tools it discovers stay
+# true to their guides. check_positionals is on because the tools here take named options
+# only, and their guides say so; a positional added by mistake should fail here first. run_help stays
+# off, the default: a pre-commit run would otherwise execute every CLI it found on each
+# commit, and the guides' defaults are checked by running the tool with --run-help by hand.
+[tool.cli_doc_consistency]
+check_positionals = true
+# The two fake CLIs drift from their docs on purpose, as the test exclude above says.
+exclude = ["cli_doc_consistency/samples"]
 
 [tool.samples_presence]
 # Libraries with no CLI: nothing in them turns an input into an output a human could diff
@@ -153,6 +177,7 @@ exempt = [
   "help_formatter",
   "live_pid_guard",
   "nothing_examined",
+  "pyproject_config",
   "stdio_utf8",
   "venv_prune",
 ]
