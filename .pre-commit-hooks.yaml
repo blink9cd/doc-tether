@@ -1,0 +1,16 @@
+---
+# The hook pre-commit installs from this repository. pre-commit builds a virtualenv from
+# the repository's pyproject.toml, which brings the shellcheck-md command and, through the
+# shellcheck-py dependency, the ShellCheck binary it runs.
+#
+# pre-commit runs the entry, then the hook's args, then the staged Markdown files. --files
+# takes every value after it, so it must come last: it is the default args rather than part
+# of the entry. Always end your own args with --files; without it, a staged file named
+# like an option would be read as one.
+- id: shellcheck-md
+  name: shellcheck-md
+  description: Run ShellCheck on the bash and sh code blocks in Markdown files.
+  entry: shellcheck-md
+  args: [--files]
+  language: python
+  types: [markdown]

@@ -1,0 +1,180 @@
+# Declared so that pre-commit, and anyone else, can install the shellcheck-md command from
+# a clone or the git URL. Nothing here is published to a package index.
+[build-system]
+# 77 is the first setuptools to accept the SPDX `license` string in [project] (PEP 639).
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+# The repository's name. The README's title carries it too, so a rename changes both.
+name = "doc-tether"
+version = "0.1.0"
+description = "Checks that keep documentation tethered to the code and commands it describes, starting with shellcheck for the shell fenced in Markdown."
+readme = "README.md"
+license = "AGPL-3.0-or-later"
+# The oldest interpreter the tools are written and type-checked for, not the newest one on
+# the machine that built it: a newer target silently accepts syntax and APIs that crash on
+# an older one.
+requires-python = ">=3.12"
+# shellcheck-py ships the ShellCheck binary itself and installs it into the environment's
+# bin/ (Scripts\ on Windows), which is on PATH wherever that environment's commands run --
+# so a pre-commit hook brings its own ShellCheck and needs no system install. Exact pin:
+# its version is ShellCheck's own version plus a packaging digit. No Python code imports it.
+dependencies = ["shellcheck-py==0.11.0.1"]
+
+[project.optional-dependencies]
+# The test-only library, pinned exactly: hypothesis drives the property tests in the
+# vendored libraries' suites, and nothing at runtime imports it.
+test = ["hypothesis==6.165.10"]
+
+[project.scripts]
+# The command a pre-commit hook and a person run. It loads shellcheck_md.py from the
+# installed doc_tether/shellcheck_md folder, which then puts the library folders installed
+# beside it on sys.path exactly as it does in a clone.
+shellcheck-md = "doc_tether.shellcheck_md.shellcheck_md:main"
+
+[tool.setuptools]
+# Each tool and library is a plain folder with no __init__.py. Mapping the repository root
+# to one namespace package, doc_tether, installs every folder listed below side by side
+# inside it, so the layout a clone has survives installation: shellcheck_md.py finds each
+# library at `<its parent>/<name>`, and bounded_run finds its src/ and stdio_utf8 the same
+# way. One enclosing name rather than each folder at the top level, because a bare
+# `stdio_utf8/` in site-packages would make `import stdio_utf8` anywhere in that
+# environment resolve to an empty namespace package instead of failing. Left to
+# auto-discovery, setuptools refuses this flat layout of sibling folders outright. The test
+# files inside each folder install too, harmlessly; live_pid_guard, which only
+# bounded_run's tests import, does not.
+package-dir = { "doc_tether" = "." }
+packages = [
+  "doc_tether",
+  "doc_tether.shellcheck_md",
+  "doc_tether.shellcheck_md.src",
+  "doc_tether.bounded_run",
+  "doc_tether.bounded_run.src",
+  "doc_tether.stdio_utf8",
+  "doc_tether.help_formatter",
+  "doc_tether.nothing_examined",
+  "doc_tether.venv_prune",
+  "doc_tether.argv_budget",
+]
+
+[tool.ruff]
+target-version = "py312"
+
+[tool.ruff.format]
+# The docs are Markdown; ruff's formatter is for the Python sources only.
+exclude = ["*.md"]
+
+[tool.ruff.lint]
+# E4/E7/E9/F are ruff's classic default set, written out so the enabled rules are a function
+# of this file rather than of whichever ruff release is installed. PGH003/PGH004 require
+# every suppression to carry a rule code. D adds the docstring rules (pep257), minus D401's
+# imperative-mood opinion, which rewords valid noun-phrase summaries.
+select = ["E4", "E7", "E9", "F", "PGH003", "PGH004", "D"]
+ignore = ["D401"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+
+[tool.ruff.lint.per-file-ignores]
+# Test method names self-document; a docstring per test would be noise.
+"**/test_*.py" = ["D"]
+
+[tool.mypy]
+python_version = "3.12"
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+# The tool and its tests reach the library folders beside it, and its own src/, through a
+# sys.path insert at run time. mypy cannot see a runtime insert, so these entries are what
+# make those imports resolve.
+mypy_path = [
+  "$MYPY_CONFIG_FILE_DIR/shellcheck_md",
+  "$MYPY_CONFIG_FILE_DIR/shellcheck_md/src",
+  "$MYPY_CONFIG_FILE_DIR/bounded_run",
+  "$MYPY_CONFIG_FILE_DIR/bounded_run/src",
+  "$MYPY_CONFIG_FILE_DIR/stdio_utf8",
+  "$MYPY_CONFIG_FILE_DIR/help_formatter",
+  "$MYPY_CONFIG_FILE_DIR/nothing_examined",
+  "$MYPY_CONFIG_FILE_DIR/venv_prune",
+  "$MYPY_CONFIG_FILE_DIR/argv_budget",
+  "$MYPY_CONFIG_FILE_DIR/live_pid_guard",
+]
+
+[tool.prose_terms]
+# Words this repository's prose must not use, so they cannot creep back in. Each names a
+# tool, a convention or a file from the larger repository these tools were developed in,
+# none of which ship here. State the rule or the measured fact instead. Each entry waives
+# itself: the declaration is not prose. The license text is not this repository's prose.
+terms = [
+  # prose: ignore[monorepo] the declaration itself
+  "monorepo",
+  # prose: ignore[check_all] the declaration itself
+  "check_all",
+  # prose: ignore[python_gate] the declaration itself
+  "python_gate",
+  # prose: ignore[fuzz_gate] the declaration itself
+  "fuzz_gate",
+  # prose: ignore[tool_subdirs] the declaration itself
+  "tool_subdirs",
+  # prose: ignore[done-bar] the declaration itself
+  "done-bar",
+]
+exclude = ["LICENSE"]
+
+# Shapes no single word can express: a backlog number, and the standards file and notes
+# folder of that larger repository. Each is a pointer that resolves for no reader of this one.
+[tool.prose_terms.patterns]
+item-tag = '(?<![0-9A-Za-z_])items?\s+\d+'  # prose: ignore[item-tag] the declaration itself
+agents-file = '(?<![0-9A-Za-z_])AGENTS\.md'  # prose: ignore[agents-file] the declaration itself
+docs-path = '(?<![0-9A-Za-z_./])docs/'  # prose: ignore[docs-path] the declaration itself
+
+[tool.dep_audit]
+# Pinning checks only in the inner loop; the network audit is run on demand.
+offline = "skip"
+
+[tool.pii_scan]
+# The license names its copyright holder, which is its purpose.
+exclude = ["LICENSE"]
+
+# prose: ignore[python_gate] the table this gate reads, named for it
+[tool.python_gate]
+# bounded_run ships two fixtures its live boundary tests launch, gc_child.py and
+# nest_child.py, and a human can run either by hand to watch the bound hold. Each is an
+# INPUT a test drives, not a module of the library -- and each does its work at import,
+# gc_child.py never exiting and nest_child.py waiting on it, so neither could be imported
+# by a paired test even in principle.
+exclude = ["bounded_run/samples"]
+
+[tool.samples_presence]
+# Libraries with no CLI: nothing in them turns an input into an output a human could diff
+# against a sample.
+exempt = [
+  "argv_budget",
+  "help_formatter",
+  "live_pid_guard",
+  "nothing_examined",
+  "stdio_utf8",
+  "venv_prune",
+]
+
+[tool.stdio_policy]
+# The whole tree, the vendored libraries included: a library is exactly where a stray
+# print() does not belong.
+paths = ["."]
+
+[tool.coverage.run]
+# Branch coverage, not line coverage: a line can run while one side of its condition never
+# does.
+branch = true
+
+[tool.coverage.report]
+# `# pragma: only-on posix` marks a line only a POSIX host runs, and
+# `# pragma: only-on win32` one only Windows runs. Each is excluded on the other kind of
+# host alone, so both stay measured where they run. coverage.py's configuration can read
+# environment variables but not the platform, so it keys on OS: Windows sets it to
+# Windows_NT in every process and POSIX systems leave it unset. exclude_also adds to
+# coverage.py's default patterns, so `# pragma: no cover` keeps working.
+exclude_also = [
+  'pragma:\s*only-on\s+posix\b(?!${OS-})',
+  'pragma:\s*only-on\s+win32\b${OS-}',
+]
