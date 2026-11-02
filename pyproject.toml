@@ -9,8 +9,8 @@ build-backend = "setuptools.build_meta"
 [project]
 # The repository's name. The README's title carries it too, so a rename changes both.
 name = "doc-tether"
-# A minor release adds a tool; a patch release changes no tool's surface.
-version = "0.2.0"
+# A minor release adds a tool or changes a tool's surface; a patch release changes neither.
+version = "0.3.0"
 description = "Checks that keep documentation tethered to the code and commands it describes: ShellCheck for the shell fenced in Markdown, and a command-line tool's docs held to its argparse definition."
 readme = "README.md"
 license = "AGPL-3.0-or-later"
@@ -19,7 +19,7 @@ license = "AGPL-3.0-or-later"
 # an older one.
 requires-python = ">=3.12"
 # shellcheck-py ships the ShellCheck binary itself and installs it into the environment's
-# bin/ (Scripts\ on Windows), which is on PATH wherever that environment's commands run --
+# bin/ (Scripts\ on Windows), which is on PATH wherever that environment's commands run,
 # so a pre-commit hook brings its own ShellCheck and needs no system install. Exact pin:
 # its version is ShellCheck's own version plus a packaging digit. No Python code imports it.
 dependencies = ["shellcheck-py==0.11.0.1"]
@@ -110,55 +110,6 @@ mypy_path = [
   "$MYPY_CONFIG_FILE_DIR/live_pid_guard",
 ]
 
-[tool.prose_terms]
-# Words this repository's prose must not use, so they cannot creep back in. Each names a
-# tool, a convention or a file from the larger repository these tools were developed in,
-# none of which ship here. State the rule or the measured fact instead. Each entry waives
-# itself: the declaration is not prose. The license text is not this repository's prose.
-terms = [
-  # prose: ignore[monorepo] the declaration itself
-  "monorepo",
-  # prose: ignore[check_all] the declaration itself
-  "check_all",
-  # prose: ignore[python_gate] the declaration itself
-  "python_gate",
-  # prose: ignore[fuzz_gate] the declaration itself
-  "fuzz_gate",
-  # prose: ignore[tool_subdirs] the declaration itself
-  "tool_subdirs",
-  # prose: ignore[done-bar] the declaration itself
-  "done-bar",
-]
-exclude = ["LICENSE"]
-
-# Shapes no single word can express: a backlog number, a development-task label, and the
-# standards file and notes folder of that larger repository. Each is a pointer that resolves
-# for no reader of this one.
-[tool.prose_terms.patterns]
-item-tag = '(?<![0-9A-Za-z_])items?\s+\d+'  # prose: ignore[item-tag] the declaration itself
-agents-file = '(?<![0-9A-Za-z_])AGENTS\.md'  # prose: ignore[agents-file] the declaration itself
-docs-path = '(?<![0-9A-Za-z_./])docs/'  # prose: ignore[docs-path] the declaration itself
-task-tag = '(?<![0-9A-Za-z_])Task [A-Z][0-9]+'  # prose: ignore[task-tag] the declaration itself
-
-[tool.dep_audit]
-# Pinning checks only in the inner loop; the network audit is run on demand.
-offline = "skip"
-
-[tool.pii_scan]
-# The license names its copyright holder, which is its purpose.
-exclude = ["LICENSE"]
-
-# prose: ignore[python_gate] the table this gate reads, named for it
-[tool.python_gate]
-# bounded_run ships two fixtures its live boundary tests launch, gc_child.py and
-# nest_child.py, and a human can run either by hand to watch the bound hold. Each is an
-# INPUT a test drives, not a module of the library -- and each does its work at import,
-# gc_child.py never exiting and nest_child.py waiting on it, so neither could be imported
-# by a paired test even in principle. cli_doc_consistency's samples are two fake CLIs, each
-# drifting from its doc on purpose so a by-hand run shows a real catch; they are inputs to
-# that tool, with no test of their own to pair.
-exclude = ["bounded_run/samples", "cli_doc_consistency/samples"]
-
 # This repository holds itself to its own check, so the command-line tools it discovers stay
 # true to their guides. check_positionals is on because the tools here take named options
 # only, and their guides say so; a positional added by mistake should fail here first. run_help stays
@@ -166,26 +117,9 @@ exclude = ["bounded_run/samples", "cli_doc_consistency/samples"]
 # commit, and the guides' defaults are checked by running the tool with --run-help by hand.
 [tool.cli_doc_consistency]
 check_positionals = true
-# The two fake CLIs drift from their docs on purpose, as the test exclude above says.
+# cli_doc_consistency's samples are two fake CLIs, each drifting from its doc on purpose so
+# a by-hand run shows a real catch.
 exclude = ["cli_doc_consistency/samples"]
-
-[tool.samples_presence]
-# Libraries with no CLI: nothing in them turns an input into an output a human could diff
-# against a sample.
-exempt = [
-  "argv_budget",
-  "help_formatter",
-  "live_pid_guard",
-  "nothing_examined",
-  "pyproject_config",
-  "stdio_utf8",
-  "venv_prune",
-]
-
-[tool.stdio_policy]
-# The whole tree, the vendored libraries included: a library is exactly where a stray
-# print() does not belong.
-paths = ["."]
 
 [tool.coverage.run]
 # Branch coverage, not line coverage: a line can run while one side of its condition never

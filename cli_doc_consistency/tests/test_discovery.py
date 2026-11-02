@@ -1,8 +1,8 @@
 """Grouped suite: which files get checked at all.
 
 The standing [tool.cli_doc_consistency] exclude read, the directory walk that prunes a
-virtualenv by its marker rather than its name, and the wiring that makes the gate SAY it
-examined nothing. One surface, and the one where a wrong answer is SILENT: a file never
+virtualenv by its marker rather than its name, and the wiring that makes the gate say it
+examined nothing. One surface, and the one where a wrong answer is silent: a file never
 examined reports no finding, so an exclude broader than its author meant would report a
 clean gate forever.
 """
@@ -25,7 +25,7 @@ import pyproject_config  # noqa: E402 - same bootstrap
 
 # The walk to the nearest pyproject, the parse, the list-of-strings validation and the
 # resolve-against-the-file's-own-directory rule belong to pyproject_config and are pinned
-# by ITS suite, so this class does not repeat them: a non-list value, a non-string member,
+# by its suite, so this class does not repeat them: a non-list value, a non-string member,
 # a key-less table and a non-dict `tool`. No `stop=` ceiling bounds the climb either:
 # faked seams mean these tests never touch a real pyproject.
 class ConfigExcludesTest(unittest.TestCase):
@@ -67,7 +67,7 @@ class ConfigExcludesTest(unittest.TestCase):
         )
 
     def test_malformed_toml_raises_the_shared_error(self) -> None:
-        """The exit-2 class is pyproject_config's, so main must catch THAT one."""
+        """The exit-2 class is pyproject_config's, so main must catch that one."""
         is_file, read_text = self._seams("[tool.cli_doc_consistency\n")
         with self.assertRaises(pyproject_config.ConfigError):
             mod.read_config_excludes(self._BASE, is_file=is_file, read_text=read_text)
@@ -167,12 +167,12 @@ class DiscoverTest(unittest.TestCase):
 
 
 class NothingExaminedWiringTest(unittest.TestCase):
-    """The gate must SAY it examined nothing when the excludes hid every candidate.
+    """The gate must say it examined nothing when the excludes hid every candidate.
 
     A bare "0 checked" + PASS is indistinguishable from a verified-clean run, so an
     exclude broader than its author meant would report a clean gate forever. The wording
     and the when-to-speak rule are tested exhaustively in nothing_examined's own suite; this
-    only pins that this tool WIRES them into its report.
+    only pins that this tool wires them into its report.
     """
 
     def test_report_names_the_hidden_count(self) -> None:

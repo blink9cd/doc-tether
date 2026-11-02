@@ -1,7 +1,7 @@
 """Grouped suite: which Markdown files this gate examines.
 
 Globbing, the default directory prune, the PEP 405 virtualenv test, --exclude, and the
-[tool.shellcheck_md] standing excludes -- one module because they all answer the same
+[tool.shellcheck_md] standing excludes. One module, because they all answer the same
 question, and a defect in any of them changes the examined set rather than the verdict
 logic.
 """
@@ -48,7 +48,7 @@ class DiscoverMarkdownFilesTests(unittest.TestCase):
             self.assertEqual([p.name for p in found], ["a.md", "b.md"])
 
     def test_a_root_inside_a_pruned_name_still_discovers(self) -> None:
-        """The prune judges the parts BELOW --root, never the root's own path."""
+        """The prune judges the parts below --root, never the root's own path."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "node_modules" / "pkg"
             root.mkdir(parents=True)
@@ -60,7 +60,7 @@ class DiscoverMarkdownFilesTests(unittest.TestCase):
 
     def test_prunes_default_dirs(self) -> None:
         # A node project's dependency READMEs (under node_modules) must not be
-        # lifted for shellcheck -- they are not ours to lint.
+        # lifted for shellcheck: they are not ours to lint.
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / "keep.md").write_text("k\n", encoding="utf-8", newline="")
@@ -78,7 +78,7 @@ def _finding_per_script(
 ) -> tuple[int, str]:
     """Stand in for shellcheck: one finding on every script it is handed.
 
-    Never the real backend, so these cases cannot reach the host -- and an exclude that
+    Never the real backend, so these cases cannot reach the host, and an exclude that
     stops binding surfaces as exit 1 rather than depending on what a real shellcheck would
     have found in the fixture.
     """
@@ -186,7 +186,7 @@ class TestConfigExcludes(unittest.TestCase):
             self.assertEqual(code, 0)
 
     def test_main_applies_each_files_nearest_config(self) -> None:
-        """--root means what --files means: each file answers to its NEAREST pyproject.
+        """--root means what --files means: each file answers to its nearest pyproject.
 
         Before, --root read only the pyproject nearest the root, so a subproject's own
         standing excludes bound a pre-commit run but not a --root run of the same tree.

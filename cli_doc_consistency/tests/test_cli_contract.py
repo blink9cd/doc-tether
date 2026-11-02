@@ -1,8 +1,8 @@
 """Grouped suite: the tool's own outward surface.
 
-What a caller or a gate sees, as opposed to what any one check computes -- analyze_file
+What a caller or a gate sees, as opposed to what any one check computes: analyze_file
 threading the three checks over a single file, the text and JSON reports, the parser itself
-(including that it is WIRED to the shared formatter rather than re-implementing it), and
+(including that it is wired to the shared formatter rather than re-implementing it), and
 main's argv handling and exit codes.
 """
 
@@ -25,15 +25,48 @@ import help_formatter  # noqa: E402 - same bootstrap
 from _fixtures import parse_module  # noqa: E402 - beside this module, via the loader's top_level_dir
 
 
-class ReqAwareFormatterWiringTest(unittest.TestCase):
-    """Assert the parser is WIRED to the shared formatter, not that it re-implements it.
+class FormatterWiringTest(unittest.TestCase):
+    """Assert the parser is wired to the shared formatter, not that it re-implements it.
 
-    Why this is not a rendering assertion: ``help_formatter.md``, "The version trap".
+    Why this is not a rendering assertion for the required options:
+    ``help_formatter.md``, "The version trap".
     """
 
     def test_parser_uses_the_shared_formatter(self) -> None:
         formatter_class = mod.build_parser().formatter_class
-        self.assertIs(formatter_class, help_formatter.ReqAwareDefaultsFormatter)
+        self.assertIs(formatter_class, help_formatter.UnsetHidingFormatter)
+
+
+class HelpRendersNoUnsetDefaultTest(unittest.TestCase):
+    """``--help`` shows a default only where one is set.
+
+    A flag left out, ``--doc`` left out and ``--exclude`` given no value hold nothing a
+    person could type, so ``(default: False)``, ``(default: None)`` and ``(default: [])``
+    would say nothing true. This one is a rendering assertion on purpose: unlike the
+    required-option case, it holds on every interpreter.
+    """
+
+    def test_help_prints_no_unset_default(self) -> None:
+        # Collapse the wrap: argparse may split "(default:" from its value.
+        rendered = " ".join(mod.build_parser().format_help().split())
+        for unset in ("(default: False)", "(default: None)", "(default: [])"):
+            with self.subTest(unset=unset):
+                self.assertNotIn(unset, rendered)
+
+    def test_unset_flags_read_none(self) -> None:
+        args = mod.build_parser().parse_args(["--path", "x"])
+        for flag in ("json", "allow_missing_doc", "run_help", "no_run_help"):
+            with self.subTest(flag=flag):
+                self.assertIsNone(getattr(args, flag))
+        self.assertIsNone(args.check_positionals)
+
+    def test_unset_flags_still_yield_boolean_switches(self) -> None:
+        # The opt-ins combine a None flag with the config's bool: the result stays a bool.
+        args = mod.build_parser().parse_args(["--path", "x"])
+        with tempfile.TemporaryDirectory() as scratch:
+            switches = mod._effective_switches(args, Path(scratch))
+        self.assertIs(switches.run_help, False)
+        self.assertIs(switches.check_positionals, False)
 
 
 class ReportTest(unittest.TestCase):

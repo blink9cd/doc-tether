@@ -2,7 +2,7 @@
 
 Nothing here compares anything. Rendered --help text becomes a defaults mapping, the
 companion .md's tables become MdArgTable, an .md section becomes a set of exit codes, and
-the module's own AST becomes the same -- four parsers over four inputs. A failure points at
+the module's own AST becomes the same: four parsers over four inputs. A failure points at
 a parser, not at a rule, which is exactly why the rules that consume these structures live
 in the next module rather than this one.
 """

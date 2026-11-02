@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Say so when a gate examined NOTHING because its excludes hid every candidate.
+"""Say so when a gate examined nothing because its excludes hid every candidate.
 
 Why this exists
 ---------------
-A discovery-based gate that finds no work prints a zero and passes -- ``Checked 0
+A discovery-based gate that finds no work prints a zero and passes: ``Checked 0
 file(s): 0 finding(s).`` That reads as verified-clean, and it is indistinguishable from
 the case where the effective exclude set pruned *every* candidate under the target: a
 gate that examined nothing at all. Both render ``PASS``. So an ``exclude`` entry broader
-than its author meant reports a clean gate, for a tree nobody is checking, indefinitely
--- and the broader the entry, the quieter the failure.
+than its author meant reports a clean gate, for a tree nobody is checking, indefinitely,
+and the broader the entry, the quieter the failure.
 
 The two zeros are not the same claim. "There were no YAML files here" is a fact about the
 tree; "every YAML file here was excluded" is a fact about the configuration, and only the
@@ -19,7 +19,7 @@ omitting it).
 Why it does not fail the build
 -----------------------------
 The verdict is deliberately left alone. Every standing exclusion in a mature tree is
-intentional -- a ``samples/`` fixture tree holding a deliberate defect for
+intentional: a ``samples/`` fixture tree holding a deliberate defect for
 hand-verification, a vendored third-party tree that is not the project's to lint. Failing
 on those would break every build that runs the check and teach the reader to ignore it. The
 line is for the case where the exclusion is *not* intentional, and it addresses that by
@@ -30,7 +30,7 @@ Entry point assumptions
 ``hidden_count`` is called once, immediately after the tool's own discovery, and its
 result is handed to ``note``. The returned line (when there is one) is printed above the
 tool's own count line, so the caveat precedes the number it qualifies. Both functions are
-pure -- no I/O, no filesystem access, no knowledge of any particular gate -- so the tool
+pure (no I/O, no filesystem access, no knowledge of any particular gate), so the tool
 keeps sole ownership of how it discovers and prunes; this module owns only the rule for
 *when* to speak and the words to use.
 """
@@ -47,8 +47,8 @@ _NOTHING_HIDDEN = 0
 def hidden_count(examined: int, count_all: Callable[[], int]) -> int:
     """How many candidates the excludes hid, or 0 when anything was examined.
 
-    *count_all* must re-run the caller's OWN discovery with its CONFIGURED excludes off --
-    the ones :func:`note` blames -- while KEEPING any prune that reflects what was never a
+    *count_all* must re-run the caller's own discovery with its configured excludes off
+    (the ones :func:`note` blames) while keeping any prune that reflects what was never a
     candidate for those to hide. A wholly empty exclude set is the wrong baseline wherever
     a gate prunes on some other authority's answer: it counts those paths as concealed and
     pins them on a config table that never touched them. Passing the real discovery
@@ -71,7 +71,7 @@ def note(hidden: int, *, noun: str, table: str, flag: str = "--path") -> str | N
     line names the argument the reader actually passed (``--root`` for ``shellcheck_md``,
     or ``--folder`` for a tool that takes that).
 
-    Returns ``None`` -- not an empty string -- when nothing was hidden, so a caller
+    Returns ``None``, not an empty string, when nothing was hidden, so a caller
     appending to a line list can filter falsy values without emitting a blank line.
     """
     if not hidden:

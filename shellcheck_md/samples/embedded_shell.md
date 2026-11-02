@@ -15,7 +15,7 @@ echo "Hello, ${name}"
 
 ## A block with a deliberate SC2086 finding
 
-The `$target` expansion below is unquoted, so shellcheck flags SC2086 -- and the
+The `$target` expansion below is unquoted, so shellcheck flags SC2086, and the
 tool remaps that finding from the temporary script it lints back to this file
 and line. The block is tagged `ksh` (not `bash`/`sh`) on purpose: a default
 run of the tool skips it, so this deliberately-dirty sample never fails

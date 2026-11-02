@@ -11,13 +11,13 @@ The checks that *judge* those facts live elsewhere; this module only reports the
 It is not the only AST reader, and the boundary is worth naming because the docstrings
 either side of it read true alone. ``clidoc_floor`` walks the same tree for the module
 docstring, the parser epilog and the imports, and ``clidoc_astchecks`` re-walks the
-``add_argument`` calls to judge them. What lands here is the reading that MORE THAN ONE
+``add_argument`` calls to judge them. What lands here is the reading that more than one
 check needs; a walk with a single consumer settles into that consumer.
 
 Reading rather than executing is the whole design. A gate that imported the tool under
 test would run its module-level code, and a tool whose parser is built inside ``main``
 would need that call made. So every fact here is derived statically, and anything that
-cannot be proven from a literal is skipped rather than guessed -- which is why a
+cannot be proven from a literal is skipped rather than guessed. That is why a
 non-literal first argument is not reported as positional, and a computed default is not
 compared against the doc.
 
@@ -203,8 +203,8 @@ def help_literal_text(node: ast.expr | None) -> str | None:
     """Return the literal text of a ``help=`` value, or None when non-literal.
 
     A plain string constant returns its value; an f-string returns the
-    concatenation of its *literal* parts (the ``{...}`` substitutions are dropped
-    -- Check A reasons about the literal text a human typed). A bare name, a
+    concatenation of its *literal* parts (the ``{...}`` substitutions are dropped,
+    since Check A reasons about the literal text a human typed). A bare name, a
     call, or a concatenation expression returns None (skipped, not guessed).
     """
     if isinstance(node, ast.Constant) and isinstance(node.value, str):

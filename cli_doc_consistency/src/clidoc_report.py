@@ -28,7 +28,7 @@ from pathlib import Path
 from clidoc_model import SEVERITY_ADVISORY, SEVERITY_GATING, Finding
 
 # nothing_examined is the shared library owning the one wording for "the exclude set
-# pruned every candidate, so this result verifies nothing" -- a sibling per-tool folder,
+# pruned every candidate, so this result verifies nothing", in a sibling per-tool folder,
 # resolved from this file's own location two levels up.
 sys.path.insert(
     0, str(Path(__file__).resolve().parent.parent.parent / "nothing_examined")

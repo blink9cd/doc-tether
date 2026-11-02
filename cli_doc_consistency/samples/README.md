@@ -1,6 +1,6 @@
 # cli_doc_consistency samples
 
-Two tiny fake CLIs whose docs are **intentionally drifted** from their code, so one
+Two tiny fake CLIs whose docs are intentionally drifted from their code, so one
 command each demonstrates the tool catching real drift by hand. Run both from the tool's
 folder.
 

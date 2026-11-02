@@ -4,8 +4,8 @@ Each test here pins one way the gate used to misread or crash on an ordinary tre
 text naming another option, a source file or doc that is not UTF-8, a build directory left
 by ``pip install .``, an option with several long spellings, a ``--[no-]flag`` row, a
 ``#`` comment inside a fenced block, a run that examined nothing, and a live ``--help``
-render that failed. They are grouped by that shared question -- does the gate survive the
-tree as it really is -- rather than spread across the suites of the modules they touch.
+render that failed. They are grouped by that shared question (does the gate survive the
+tree as it really is?) rather than spread across the suites of the modules they touch.
 """
 
 from __future__ import annotations
@@ -28,7 +28,7 @@ _CLI_SOURCE = "import argparse\nargparse.ArgumentParser()\n"
 
 
 class _ScratchMixin(unittest.TestCase):
-    """A per-test scratch directory, removed afterwards."""
+    """A per-test scratch directory, removed when the test ends."""
 
     def _scratch(self) -> Path:
         scratch = tempfile.TemporaryDirectory()

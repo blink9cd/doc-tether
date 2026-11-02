@@ -1,7 +1,7 @@
 """Grouped suite: a file the tool cannot read is exit 2, never a finding or a crash.
 
-Exit 1 means "ShellCheck reported findings", so an I/O fault that surfaced as 1 -- or as a
-traceback, which a shell also reads as non-zero -- would send a reader to look for findings
+Exit 1 means "ShellCheck reported findings", so an I/O fault that surfaced as 1 (or as a
+traceback, which a shell also reads as non-zero) would send a reader to look for findings
 that do not exist. Each case here pins one way reading or writing can fail, and the exit
 and message it must produce instead.
 """

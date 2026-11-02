@@ -1,10 +1,10 @@
-"""Grouped suite: Check B -- does the .md mirror the CLI, and what is exempt.
+"""Grouped suite: Check B, whether the .md mirrors the CLI, and what is exempt.
 
 The finding rules over already-parsed structures: an option documented or missing, a
 documented default contradicting the real one, an exit code raised but undocumented. The
 numeric layer sits here too, since deciding whether two defaults disagree is what the
 contradiction rule is made of. check_md_mirror closes the module because it sequences those
-rules and owns the gating-versus-advisory call -- the exemptions are as much of this check
+rules and owns the gating-versus-advisory call: the exemptions are as much of this check
 as the findings are.
 """
 

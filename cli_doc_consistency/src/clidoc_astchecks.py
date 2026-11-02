@@ -5,7 +5,7 @@ Private to ``cli_doc_consistency`` (it lives in that folder's ``src/``); see
 
 Checks A and D share this module because they share a shape, not merely a size: each
 walks the same ``add_argument`` calls, judges one literal, and emits a gating finding with
-no other input -- no companion doc, no rendered help, no imports. That is what separates
+no other input: no companion doc, no rendered help, no imports. That is what separates
 them from checks B and C, which each need a second artifact to compare against and get a
 module apiece. A reader arriving at "why was my ``add_argument`` flagged?" arrives holding
 both possibilities at once.
@@ -28,7 +28,7 @@ from clidoc_model import CHECK_A, CHECK_D, SEVERITY_GATING, Finding
 
 # --- Check A / Check C literals ---------------------------------------------
 # The token argparse's ArgumentDefaultsHelpFormatter looks for to decide it must
-# NOT append its own default; when present, a literal "(default" is intentional.
+# not append its own default; when present, a literal "(default" is intentional.
 _DEFAULT_MARKER = "(default"
 
 
@@ -88,7 +88,7 @@ def check_positional_arguments(tree: ast.Module, py_path: Path) -> list[Finding]
     (``--value`` / ``-v``) starts with ``-`` and is the required form. A call with
     no positional args (``add_argument(dest=...)``) or whose first argument is a
     non-literal (a name/expr) cannot be statically proven positional, so it is
-    skipped rather than guessed -- Check B / Check A stay unaffected.
+    skipped rather than guessed. Check B and Check A stay unaffected.
     """
     findings: list[Finding] = []
     for call in _iter_add_argument_calls(tree):

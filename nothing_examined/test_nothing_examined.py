@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Unit tests for nothing_examined -- bare-runnable (python test_nothing_examined.py).
+"""Unit tests for nothing_examined, bare-runnable (python test_nothing_examined.py).
 
 Both functions are pure, so every branch is reachable without any filesystem or
 subprocess seam; 100% branch coverage needs no pragma.
@@ -19,7 +19,7 @@ import nothing_examined  # noqa: E402 - import follows the sys.path bootstrap ab
 
 
 class HiddenCountTest(unittest.TestCase):
-    """The rule for WHEN a gate should speak: only when it examined nothing."""
+    """The rule for when a gate should speak: only when it examined nothing."""
 
     def test_examined_work_hides_nothing(self) -> None:
         self.assertEqual(nothing_examined.hidden_count(3, lambda: 99), 0)
@@ -28,7 +28,7 @@ class HiddenCountTest(unittest.TestCase):
         self.assertEqual(nothing_examined.hidden_count(0, lambda: 94), 94)
 
     def test_examined_nothing_and_nothing_to_find_is_zero(self) -> None:
-        """A genuinely empty tree hid nothing, so it must stay quiet -- this is the
+        """A genuinely empty tree hid nothing, so it must stay quiet. This is the
         distinction the whole module exists to draw."""
         self.assertEqual(nothing_examined.hidden_count(0, lambda: 0), 0)
 
@@ -55,7 +55,7 @@ class HiddenCountTest(unittest.TestCase):
 
 
 class NoteTest(unittest.TestCase):
-    """The words themselves -- single-sourced so the gates using them cannot drift apart."""
+    """The words themselves, single-sourced so the gates using them cannot drift apart."""
 
     def test_no_note_when_nothing_hidden(self) -> None:
         self.assertIsNone(nothing_examined.note(0, noun="file", table="python_lint"))

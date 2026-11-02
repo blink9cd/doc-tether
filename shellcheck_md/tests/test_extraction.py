@@ -1,6 +1,6 @@
 """Grouped suite: lifting fenced shell out of Markdown.
 
-The pure front half -- which fences open a shell block, what a block's body is, how it
+The pure front half: which fences open a shell block, what a block's body is, how it
 renders as a script, and how a script line maps back to its Markdown line. Nothing here
 touches the filesystem or shellcheck, so every case is a string.
 """
@@ -100,8 +100,8 @@ class IndentedFenceTests(unittest.TestCase):
     Indenting a fence is the normal spelling of a code block nested under a list item,
     and CommonMark also allows up to three spaces at the top level. A scanner anchored to
     column zero skips both silently: the file is still read and still counted, so the run
-    reports a clean file rather than an unchecked one, and the file count -- the number a
-    reader checks to confirm coverage -- is identical either way.
+    reports a clean file rather than an unchecked one, and the file count (the number a
+    reader checks to confirm coverage) is identical either way.
     """
 
     _COMMAND = "$HOME/x/python3 foo.py --bar"
@@ -179,7 +179,7 @@ class IndentedFenceTests(unittest.TestCase):
 
 
 class InfoStringTests(unittest.TestCase):
-    """CommonMark's language is the info string's FIRST word, compared without case.
+    """CommonMark's language is the info string's first word, compared without case.
 
     Matching the whole info string exactly skipped ```` ```bash title="x" ```` and
     ```` ```Bash ```` silently: the file was still counted, so the run read as clean.

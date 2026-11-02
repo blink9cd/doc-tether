@@ -3,7 +3,7 @@
 Private to ``cli_doc_consistency`` (it lives in that folder's ``src/``); see
 ``clidoc_model`` for why every module here carries the tool's prefix.
 
-The two halves belong together because they answer one question -- *what is in scope* --
+The two halves belong together because they answer one question, *what is in scope*,
 from opposite directions: the config supplies the standing exclusions, and the walk
 applies them alongside the built-in prunes. Splitting them would put the reader of
 ``[tool.cli_doc_consistency] exclude`` in one file and its only consumer in another.
@@ -38,10 +38,10 @@ from pathlib import Path
 from clidoc_astcli import is_cli_module
 from clidoc_model import TargetError
 
-# venv_prune owns the name-independent virtualenv test (PEP 405's pyvenv.cfg marker) --
+# venv_prune owns the name-independent virtualenv test (PEP 405's pyvenv.cfg marker).
 # _DEFAULT_EXCLUDE_DIRS below names only ".venv", so without it every third-party CLI
 # module under site-packages is checked for a companion doc. pyproject_config owns the one
-# nearest-pyproject [tool.<name>] read -- the walk, the parse, the stop-the-gate rule for
+# nearest-pyproject [tool.<name>] read: the walk, the parse, the stop-the-gate rule for
 # config that cannot be trusted, and what a resolved entry means (a subtree). Both are
 # sibling per-tool folders, resolved from this file's own location two levels up.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "venv_prune"))
@@ -145,8 +145,8 @@ def _require_bool(values: dict[str, object], key: str) -> bool:
     """*key*'s value as a bool (absent -> False); anything else is a :class:`ConfigError`.
 
     Strict on purpose: a quoted ``"true"`` or a ``1`` read as truthy would work by
-    accident, and a ``"false"`` read the same way would switch a check ON while saying
-    off -- so a value that is not a TOML boolean stops the gate instead.
+    accident, and a ``"false"`` read the same way would switch a check on while saying
+    off, so a value that is not a TOML boolean stops the gate instead.
     """
     value = values.get(key, False)
     if not isinstance(value, bool):

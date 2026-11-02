@@ -122,7 +122,7 @@ class DocTranscriptionConsistencyTest(unittest.TestCase):
 
     def test_roster_letters_match_check_constants(self) -> None:
         doc = _doc_text()
-        letters = set(re.findall(r"^\| ([A-Z]) -- ", doc, re.MULTILINE))
+        letters = set(re.findall(r"^\| ([A-Z]): ", doc, re.MULTILINE))
         self.assertEqual(letters, {mod.CHECK_A, mod.CHECK_B, mod.CHECK_C, mod.CHECK_D})
 
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Unit tests for venv_prune -- bare-runnable (python test_venv_prune.py).
+"""Unit tests for venv_prune, bare-runnable (python test_venv_prune.py).
 
 The predicate touches the filesystem, so these build real directory trees under a
 temp dir rather than faking a stat seam: the whole point of the marker is that it is
@@ -32,7 +32,7 @@ class IsVirtualenvTest(unittest.TestCase):
         self.root = Path(self._tmp.name)
 
     def _make_venv(self, name: str) -> Path:
-        """Create a minimal but REAL venv root: a directory holding the marker file."""
+        """Create a minimal but real venv root: a directory holding the marker file."""
         venv = self.root / name
         venv.mkdir()
         # newline="" keeps the fixture byte-identical on every host (RL004): text mode
@@ -56,8 +56,8 @@ class IsVirtualenvTest(unittest.TestCase):
         self.assertFalse(venv_prune.is_virtualenv(plain))
 
     def test_a_subdirectory_of_a_venv_is_not_itself_a_venv(self) -> None:
-        """The predicate answers about ONE directory. Callers prune at the root, so
-        nothing below it is ever visited -- but the answer for a nested dir must still
+        """The predicate answers about one directory. Callers prune at the root, so
+        nothing below it is ever visited, but the answer for a nested dir must still
         be honest, or a caller that reached one another way would skip real source."""
         venv = self._make_venv(".venv")
         inner = venv / "Lib" / "site-packages"
@@ -66,7 +66,7 @@ class IsVirtualenvTest(unittest.TestCase):
 
     def test_empty_marker_still_counts(self) -> None:
         """PEP 405 does not require any particular key, and this module deliberately
-        does not parse the file -- presence IS the contract."""
+        does not parse the file: presence is the contract."""
         venv = self.root / "empty-marker"
         venv.mkdir()
         (venv / _MARKER).write_text("", encoding="utf-8", newline="")
@@ -74,14 +74,14 @@ class IsVirtualenvTest(unittest.TestCase):
 
     def test_marker_as_a_directory_does_not_count(self) -> None:
         """A directory named pyvenv.cfg is not the marker file, so this must stay
-        False -- the check is is_file(), not exists()."""
+        False: the check is is_file(), not exists()."""
         impostor = self.root / "impostor"
         (impostor / _MARKER).mkdir(parents=True)
         self.assertFalse(venv_prune.is_virtualenv(impostor))
 
     def test_a_file_path_is_not_a_virtualenv(self) -> None:
         """Callers pass directory entries, but a file must return False rather than
-        raise -- a walk that tripped over one would abort the whole gate."""
+        raise, since a walk that tripped over one would abort the whole gate."""
         target = self.root / "module.py"
         target.write_text("x = 1\n", encoding="utf-8", newline="")
         self.assertFalse(venv_prune.is_virtualenv(target))

@@ -1,10 +1,10 @@
 """The vocabulary every other piece of this gate shares: check ids, severities, records.
 
-Private to ``cli_doc_consistency`` -- it lives in that folder's ``src/``, so
+Private to ``cli_doc_consistency``: it lives in that folder's ``src/``, so
 nothing outside this tool folder may import it. Every module here carries the tool's
 prefix: a ``src/`` dir placed on ``mypy_path`` contributes its module names to one flat
 namespace shared with every other registered ``src/``, and two files of the same name do
-not collide loudly -- one silently shadows the other and is type-checked never. A bare
+not collide loudly: one silently shadows the other and is never type-checked. A bare
 ``model.py`` is exactly the name a second tool would reach for.
 
 This module imports none of its siblings, which is what keeps the dependency graph
@@ -80,7 +80,7 @@ class OptionInfo:
     lineno: int
     # Every long string the option answers to, ``name`` first: its other spellings
     # (``--dryrun`` beside ``--dry-run``) and, for a BooleanOptionalAction, ``--no-<name>``.
-    # Empty means "only name" -- the default, for an OptionInfo built by hand.
+    # Empty means "only name", the default for an OptionInfo built by hand.
     aliases: tuple[str, ...] = ()
 
     @property

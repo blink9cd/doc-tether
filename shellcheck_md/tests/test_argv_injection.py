@@ -1,8 +1,8 @@
 """Grouped suite: every token after ``--files`` is a file name, never an option.
 
 pre-commit runs the hook's command with the staged file names appended, and the hook's
-command ends in ``--files``. When argparse read those names, a staged file NAMED like an
-option -- ``--shellcheck=<path>``, or an abbreviation of it -- was parsed as that option, so
+command ends in ``--files``. When argparse read those names, a staged file named like an
+option (``--shellcheck=<path>``, or an abbreviation of it) was parsed as that option, so
 a file in the repository chose which executable ran as the backend, and a payload that
 printed nothing and exited 0 read as a clean pass. The tool now splits its arguments at the
 first ``--files``: only what comes before is parsed, and everything after is a file name.
@@ -80,7 +80,8 @@ class OptionShapedNamesTests(_InjectionCase):
                 code, out, err = self._run(["--files", "a.md", name])
                 self.assertEqual(code, 2)
                 self.assertEqual(out, "")
-                self.assertEqual(err, f"ERROR: not a file: {name}\n")
+                # Named as a path, in the host's separators, so the case holds on Windows too.
+                self.assertEqual(err, f"ERROR: not a file: {Path(name)}\n")
                 self.assertEqual(self.seen, [], "nothing may run on a refused command")
 
     def test_an_option_shaped_name_that_exists_is_linted_as_a_file(self) -> None:

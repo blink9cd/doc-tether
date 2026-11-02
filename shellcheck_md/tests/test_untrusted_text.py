@@ -1,6 +1,6 @@
 """Grouped suite: text the tool did not write is escaped before it reaches a terminal.
 
-A Markdown file's NAME, a finding's message and ShellCheck's own output all come from
+A Markdown file's name, a finding's message and ShellCheck's own output all come from
 outside the tool. Printed raw, an escape sequence in any of them drives the terminal or CI
 log it lands in, and a direction override makes one name display as another. Every human
 facing line therefore goes through ``stdio_utf8.spell_unsafe``, which spells each such

@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
-"""What a fenced shell block and a shellcheck finding ARE, and how each crosses between them.
+"""What a fenced shell block and a shellcheck finding are, and how each crosses between them.
 
-Private to ``shellcheck_md`` -- it lives in that folder's ``src/``, and nothing outside this
+Private to ``shellcheck_md``: it lives in that folder's ``src/``, and nothing outside this
 tool folder may import it. The name is prefixed rather than a bare ``findings.py``
-because a tool's ``src/`` goes on ``sys.path`` as a DIRECTORY: two tools each
+because a tool's ``src/`` goes on ``sys.path`` as a directory: two tools each
 shipping a generic module name would collide in any process importing both, and the loser
 would be shadowed silently.
 
-Grouped by being PURE, which is also the seam that makes the parent testable. Lifting a
+Grouped by being pure, which is also the seam that makes the parent testable. Lifting a
 block out of Markdown, rendering it as a script, reading one line of shellcheck's gcc output,
-and mapping that line back to the Markdown it came from are all total functions over strings
--- so every case here is pinned with a literal rather than a temp directory or a subprocess.
-What is left in the parent is exactly what is NOT pure: discovery, config, the run seam, the
+and mapping that line back to the Markdown it came from are all total functions over strings,
+so every case here is pinned with a literal rather than a temp directory or a subprocess.
+What is left in the parent is exactly what is not pure: discovery, config, the run seam, the
 argv budget, and the CLI.
 
 The two records sit beside the functions that build them rather than in a model module of
-their own. ``ShellBlock`` exists to answer ``remap_line``'s question -- which source line is
-this script line? -- and a record whose meaning lives in another file drifts away from the
+their own. ``ShellBlock`` exists to answer ``remap_line``'s question (which source line is
+this script line?), and a record whose meaning lives in another file drifts away from the
 code that gives it that meaning.
 
 Entry point assumptions
@@ -37,15 +37,15 @@ from typing import NamedTuple
 
 DEFAULT_LANGS: tuple[str, ...] = ("bash", "sh")
 
-# A fence is matched by SHAPE, never by column. Anchoring the scan to column zero skips
-# the normal spelling of a code block nested under a list item -- and skips it silently,
+# A fence is matched by shape, never by column. Anchoring the scan to column zero skips
+# the normal spelling of a code block nested under a list item, and skips it silently,
 # because the file is still read and still counted, so the summary a reader checks to
 # confirm coverage reads the same whether the block was linted or never seen.
 #
 # Both of CommonMark's fence characters are taken: a run of three or more backticks, or of
 # three or more tildes. A closer must use the opener's character (see closes_fence).
 #
-# The opener takes ANY indentation rather than CommonMark's top-level maximum of three.
+# The opener takes any indentation rather than CommonMark's top-level maximum of three.
 # A flat scanner cannot know which container a line sits in, so the choice is between
 # over- and under-accepting, and the two are not symmetric: over-accepting lints a block
 # CommonMark would call literal text, which surfaces as a spurious finding on the line
@@ -55,7 +55,7 @@ DEFAULT_LANGS: tuple[str, ...] = ("bash", "sh")
 _OPEN_RE = re.compile(r"^(?P<indent>[ \t]*)(?P<fence>`{3,}|~{3,})(?P<info>.*)$")
 _CLOSE_RE = re.compile(r"^(?P<indent>[ \t]*)(?P<fence>`{3,}|~{3,})[ \t]*$")
 
-# CommonMark forbids a backtick in a BACKTICK fence's info string (the line would be an
+# CommonMark forbids a backtick in a backtick fence's info string (the line would be an
 # inline code span instead); a tilde fence's info string may hold one.
 _BACKTICK = "`"
 
@@ -67,7 +67,7 @@ _SCRIPT_STEM_MAX = 64
 _UNSAFE_NAME_CHARS = re.compile(r"[^A-Za-z0-9._-]")
 
 # CommonMark lets a closing fence sit up to three spaces further in than its opener. The
-# bound is what keeps a deeply-indented run of backticks INSIDE a block from closing it
+# bound is what keeps a deeply-indented run of backticks inside a block from closing it
 # early, which a bare "any indentation" closer test would do.
 _MAX_CLOSER_EXTRA_INDENT = 3
 
@@ -87,10 +87,10 @@ class ShellBlock:
     lang: str
     body: tuple[str, ...]  # already dedented by `body_indent` characters
     # Characters of common leading whitespace removed from every body line. Kept on the
-    # record because it is the ONLY thing that puts a finding's column back where a reader
+    # record because it is the only thing that puts a finding's column back where a reader
     # will click: the dedent is uniform across the block, so the correction is exact rather
-    # than a guess. Defaults to zero so a flush block -- and every construction that
-    # predates nesting support -- describes itself truthfully with no argument.
+    # than a guess. Defaults to zero so a flush block, and every construction that
+    # predates nesting support, describes itself truthfully with no argument.
     body_indent: int = 0
 
 
@@ -141,8 +141,8 @@ class BatchParse(NamedTuple):
 def parse_fence_open(line: str, langs: Sequence[str]) -> _FenceOpen | None:
     """Return the opening fence `line` declares for one of `langs`, else None.
 
-    Indentation is accepted and measured rather than rejected -- see ``_OPEN_RE`` for why
-    any depth is taken. The language is the info string's FIRST word, as CommonMark reads
+    Indentation is accepted and measured rather than rejected (see ``_OPEN_RE`` for why
+    any depth is taken). The language is the info string's first word, as CommonMark reads
     it, so ```` ```bash title="x" ```` is a bash fence; it is compared without case, so
     ```` ```Bash ```` is one too, and the language returned is the case-folded word. A bare
     fence carrying no language, and one naming a language outside *langs*, are both
@@ -177,7 +177,7 @@ def fence_language(line: str, langs: Sequence[str]) -> str | None:
 def closes_fence(line: str, opening: _FenceOpen) -> bool:
     """Return True if `line` is a closing fence for `opening`.
 
-    Judged AGAINST the opener rather than by a column-zero search, which is what lets an
+    Judged against the opener rather than by a column-zero search, which is what lets an
     indented block end where it actually ends: the run must use the opener's character and
     at least as many of it, carry nothing but whitespace after them, and sit no more than
     :data:`_MAX_CLOSER_EXTRA_INDENT` further in.
@@ -202,11 +202,11 @@ def dedent_body(body: Sequence[str], cap: int) -> tuple[int, tuple[str, ...]]:
     A nested block's indentation is Markdown's, not the script's, and handing it to
     shellcheck is not merely untidy: a heredoc terminator has to reach column zero, so an
     indented body turns a valid heredoc into an unterminated one. CommonMark removes at
-    most the opening fence's own indentation, which is what *cap* carries -- a flush
+    most the opening fence's own indentation, which is what *cap* carries. A flush
     fence caps at zero and this is then a byte-exact no-op, so no finding that reports
     today can move.
 
-    The width is capped by the common prefix of the NON-BLANK lines, so every non-blank
+    The width is capped by the common prefix of the non-blank lines, so every non-blank
     line provably holds at least that many leading whitespace characters and the slice is
     total; a blank line is shorter and slices to empty, which is what it already meant.
     """
@@ -294,7 +294,7 @@ def remap_column(block: ShellBlock, script_line: int, script_column: int) -> int
 
     Dedenting a nested block moves every body column left by ``body_indent``; this puts
     it back, so a reported ``file:line:column`` still points at the character that caused
-    the finding. Script line 1 is the synthesized shebang -- no Markdown column
+    the finding. Script line 1 is the synthesized shebang: no Markdown column
     corresponds to it, so its column is passed through untouched rather than shifted onto
     a position that means nothing.
     """

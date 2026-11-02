@@ -1,4 +1,4 @@
-"""Grouped suite: the options that change WHAT runs -- ``--doc`` and the two opt-ins.
+"""Grouped suite: the options that change what runs, ``--doc`` and the two opt-ins.
 
 ``--doc`` names the doc to check in place of the sibling ``<name>.md``. ``--run-help`` and
 ``--check-positionals`` each turn on one behavior that is off by default for a stranger's

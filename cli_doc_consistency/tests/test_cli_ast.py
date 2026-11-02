@@ -1,7 +1,7 @@
-"""Grouped suite: the CLI side -- what the argparse tree says.
+"""Grouped suite: the CLI side, meaning what the argparse tree says.
 
 Recognizing a CLI module, lifting each add_argument call into an OptionInfo, and reading a
-help= literal; then the two checks that judge what comes out of that walk -- Check A (a
+help= literal; then the two checks that judge what comes out of that walk: Check A (a
 hardcoded default in help= text argparse would have appended itself) and Check D (a
 positional where a named option belongs). They group together because they fail for one
 reason: the AST walk read the parser wrong. A reader holding a wrong OptionInfo needs the
@@ -52,7 +52,7 @@ class IsCliModuleTest(unittest.TestCase):
         self.assertFalse(mod.is_cli_module(parse_module("x.foo()\nprint('hi')")))
 
     def test_a_name_only_containing_the_parser_is_not_cli(self) -> None:
-        # The name must END with it: a factory is not a parser.
+        # The name must end with it: a factory is not a parser.
         for src in ("f.ArgumentParserFactory()", "ArgumentParserFactory()"):
             with self.subTest(src=src):
                 self.assertFalse(mod.is_cli_module(parse_module(src)))

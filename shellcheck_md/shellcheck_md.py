@@ -7,10 +7,10 @@ to a temporary script (prefixed with a synthesized shebang so shellcheck picks
 the right dialect), runs shellcheck over them, and remaps each finding back to its
 original ``<markdown file>:<line>``.
 
-Those scripts travel to shellcheck **on the command line**, which has a hard ceiling, so
+Those scripts travel to shellcheck on the command line, which has a hard ceiling, so
 they are split across as many invocations as it takes to fit and the findings merged. The
 split is not a tuning choice: overflowing surfaces on Windows as ``WinError 206``, which
-CPython raises as ``FileNotFoundError`` -- the very class a missing executable raises.
+CPython raises as ``FileNotFoundError``: the very class a missing executable raises.
 
 Run it from a project root, or from a pre-commit hook: the exit status is non-zero
 whenever shellcheck reports a finding, as a linter's is. The entry point assumes a
@@ -42,14 +42,14 @@ import help_formatter  # noqa: E402 - import follows the sys.path bootstrap abov
 import stdio_utf8  # noqa: E402 - import follows the sys.path bootstrap above
 
 # bounded_run is the shared bounded-capture run seam, resolved the same way: a
-# capturing subprocess.run with a timeout does NOT bound a child that spawns its own
+# capturing subprocess.run with a timeout does not bound a child that spawns its own
 # children, because the kill reaches only the direct child.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "bounded_run"))
 
 import bounded_run  # noqa: E402 - import follows the sys.path bootstrap above
 
 # nothing_examined is the shared library owning the one wording for "the exclude set
-# pruned every candidate, so this result verifies nothing" -- resolved from this file's
+# pruned every candidate, so this result verifies nothing", resolved from this file's
 # own location like stdio_utf8 above.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "nothing_examined"))
 # venv_prune owns the name-independent "is this a virtualenv?" test (PEP 405's
@@ -57,13 +57,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "nothing_examine
 # directory-name prune alone misses a virtualenv not named .venv, and its vendored READMEs
 # would be lifted for shellcheck.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "venv_prune"))
-# argv_budget owns the command-line ceilings, the list2cmdline measurement and the splitter
-# -- so the budget is derived per run from what is actually being launched, rather than
+# argv_budget owns the command-line ceilings, the list2cmdline measurement and the splitter,
+# so the budget is derived per run from what is actually being launched, rather than
 # hardcoded here. Resolved the same sibling way.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "argv_budget"))
-# fence_findings and markdown_selection are this tool's OWN private modules, in its `src/`
-# dir -- resolved from this file's location for the same reason as the
-# siblings above, one level DOWN instead of up. fence_findings holds everything pure: what a
+# fence_findings and markdown_selection are this tool's own private modules, in its `src/`
+# dir, resolved from this file's location for the same reason as the
+# siblings above, one level down instead of up. fence_findings holds everything pure: what a
 # block and a finding are, and how each crosses between the Markdown and the generated
 # script. markdown_selection decides which Markdown files a run examines,
 # shellcheck_scratch where the extracted scripts are written, shellcheck_invocation what
@@ -83,7 +83,7 @@ import terminal_safe_parser  # noqa: E402 - import follows the sys.path bootstra
 # Re-exported because they are this tool's public surface: a caller (and its suite) imports
 # `shellcheck_md` and never reaches into a private module. `DEFAULT_LANGS` is re-exported
 # rather than restated so --help's fence-language sentence and the post-parse default both
-# read the ONE definition -- a second copy here could drift from the code applying it.
+# read the one definition. A second copy here could drift from the code applying it.
 DEFAULT_LANGS = fence_findings.DEFAULT_LANGS
 ShellBlock = fence_findings.ShellBlock
 Finding = fence_findings.Finding
@@ -122,18 +122,18 @@ resolve_default_shellcheck = shellcheck_invocation.resolve_default_shellcheck
 ScratchWriteError = shellcheck_scratch.ScratchWriteError
 split_at_files = argv_files_split.split_at_files
 
-# Per-BATCH wall-clock bound: the extracted scripts are split across as many shellcheck
-# invocations as the argv ceiling requires, and this bounds EACH of them -- so a list split
+# Per-batch wall-clock bound: the extracted scripts are split across as many shellcheck
+# invocations as the argv ceiling requires, and this bounds each of them, so a list split
 # three ways can take up to three times this in total. shellcheck is a fast native binary,
 # so a whole tree of Markdown fences is seconds and this is headroom for a cold filesystem
 # rather than a tight SLA; even several batches of it stay inside the bound a build or a
-# pre-commit run would put around the whole tool, so a WEDGED shellcheck surfaces as this
+# pre-commit run would put around the whole tool, so a wedged shellcheck surfaces as this
 # tool's own exit 2 naming shellcheck rather than a generic kill from outside. The bound
 # must be on the call: an outer deadline only fires between calls, never inside one.
 DEFAULT_TIMEOUT_SECONDS = 300.0
 
-# The backend this gate drives, named ONCE. lint_markdown's default, the CLI's default
-# and the ceiling each batch is sized against have to name the SAME executable, or the
+# The backend this gate drives, named once. lint_markdown's default, the CLI's default
+# and the ceiling each batch is sized against have to name the same executable, or the
 # budget is measured over a command line the tool never sends.
 DEFAULT_SHELLCHECK = "shellcheck"
 
@@ -143,10 +143,10 @@ def _run_shellcheck(
 ) -> tuple[int, str]:
     """Run shellcheck in gcc format over `script_paths`; return (exit status, output).
 
-    *script_paths* is ONE batch (see :func:`chunk_script_paths`), all in one folder with
+    *script_paths* is one batch (see :func:`chunk_script_paths`), all in one folder with
     one rc file, and *timeout* bounds this invocation alone. The output is stdout then stderr. Raises FileNotFoundError when the executable
-    cannot be found -- or, on Windows, when the command line is too long, which arrives as
-    the same class and is told apart by ``winerror`` -- another ``OSError`` when it cannot
+    cannot be found (or, on Windows, when the command line is too long, which arrives as
+    the same class and is told apart by ``winerror``), another ``OSError`` when it cannot
     be started at all, and ``subprocess.TimeoutExpired`` after *timeout* seconds. The
     caller maps all of them to the same exit-2 "could not run" rather than a false clean.
     """
@@ -197,7 +197,7 @@ def lint_markdown(
     The generated scripts are grouped by the rc file nearest each Markdown file, each group
     in its own temporary folder beside a copy of that rc file (see ``shellcheck_scratch``),
     and each group is split across as many shellcheck invocations as the argv ceiling
-    requires (:func:`chunk_script_paths`); *timeout* applies to EACH invocation rather
+    requires (:func:`chunk_script_paths`); *timeout* applies to each invocation rather
     than to the whole set. Findings from every batch are accumulated and returned sorted by
     file, line and column, whatever the grouping.
 
@@ -205,7 +205,7 @@ def lint_markdown(
     and :class:`ScratchWriteError` when the scripts cannot be written. A missing shellcheck
     raises FileNotFoundError, one that cannot start another ``OSError``, one that outlasts
     *timeout* ``subprocess.TimeoutExpired``, and one whose exit status carries no verdict
-    :class:`CouldNotRun`, carrying whatever earlier groups found -- all could-not-run
+    :class:`CouldNotRun`, carrying whatever earlier groups found. All are could-not-run
     conditions the caller reports as exit 2, and all abandon the remaining batches: an
     environment fault the next batch would only reproduce. A batch exiting 2 does not stop
     the run; after every batch has run, :class:`IncompleteRun` carries every finding found.
@@ -273,7 +273,7 @@ def _report(
 def _select(args: argparse.Namespace) -> tuple[list[Path], int]:
     """The Markdown files this run examines, and how many candidates the excludes hid.
 
-    A run that examined NOTHING must not read as verified-clean, so the hidden count is
+    A run that examined nothing must not read as verified-clean, so the hidden count is
     what ``nothing_examined`` needs to say so. Raises :class:`ConfigError`.
     """
     cli_excludes = [item.resolve() for item in args.exclude]
@@ -314,14 +314,14 @@ _EPILOG = (
     "from it, where shellcheck finds it; SHELLCHECK_OPTS still applies, and one that changes the output format is a "
     "could-not-run, never a clean result. "
     "The extracted scripts are split across as many shellcheck calls as the "
-    "command-line ceiling requires, and --timeout-seconds bounds EACH of them, so "
+    "command-line ceiling requires, and --timeout-seconds bounds each of them, so "
     "a split run can take a multiple of it; exceeding it is the same "
     "could-not-run (exit 2) as a missing executable, never a clean result. "
     "Exit codes: 0 = clean; 1 = shellcheck findings reported; 2 = untrusted "
     "pyproject config ([tool.shellcheck_md] malformed or unreadable), a "
     "--files entry that is not a file, a Markdown file that cannot be read as UTF-8, "
     "a temporary script that cannot be written, or shellcheck could not be run or reached no verdict (missing, unable to start, "
-    "over the bound, or an exit status of 2 or more -- the findings already reported are "
+    "over the bound, or an exit status of 2 or more; the findings already reported are "
     "printed first)."
 )
 
@@ -331,7 +331,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     Split out of :func:`main` so the parser is reachable without running the tool: the
     formatter binding is then assertable directly, instead of only through rendered
-    ``--help`` text -- which on a 3.13+ interpreter cannot falsify it at all.
+    ``--help`` text, which on a 3.13+ interpreter cannot falsify it at all.
     """
     parser = terminal_safe_parser.TerminalSafeParser(
         prog=os.path.basename(sys.argv[0]),
@@ -348,18 +348,6 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--root", help="Directory to search for Markdown files (or give --files)."
-    )
-    # Declared for --help only: main splits the command line at this flag before parsing,
-    # so argparse never sees it, nor any token after it (see argv_files_split).
-    parser.add_argument(
-        "--files",  # spelled as argv_files_split.FILES_FLAG is; a test pins the two
-        nargs="+",
-        default=[],
-        metavar="FILE",
-        help=(
-            "Markdown files to lint instead of searching --root. Must be last: every "
-            "argument after it is a file name."
-        ),
     )
     parser.add_argument(
         "--glob",
@@ -387,7 +375,7 @@ def build_parser() -> argparse.ArgumentParser:
         type=float,
         default=DEFAULT_TIMEOUT_SECONDS,
         help=(
-            "Wall-clock bound on EACH shellcheck call (the scripts are split across as "
+            "Wall-clock bound on each shellcheck call (the scripts are split across as "
             "many as the argv ceiling needs); exceeding it is exit 2, not clean."
         ),
     )
@@ -398,12 +386,24 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="LANG",
         default=None,
         # The real default is applied after parsing (DEFAULT_LANGS when no --lang
-        # is given), so the value derives from the constant here -- it cannot drift
+        # is given), so the value derives from the constant here and cannot drift
         # from a hand-typed "bash and sh".
         help=(
             "Fence language to lint, matched against a fence's first info-string word "
             "without case; repeatable. Any value replaces the built-in "
             f"set ({', '.join(DEFAULT_LANGS)}); omitting it keeps that set."
+        ),
+    )
+    # Declared last, for --help only, so usage prints it last: main splits the command line
+    # here before parsing, so argparse never sees it nor any later token (argv_files_split).
+    parser.add_argument(
+        "--files",  # spelled as argv_files_split.FILES_FLAG is; a test pins the two
+        nargs="+",
+        default=[],
+        metavar="FILE",
+        help=(
+            "Markdown files to lint instead of searching --root. Must be last: every "
+            "argument after it is a file name."
         ),
     )
     return parser
@@ -457,8 +457,8 @@ def _lint_and_report(
     except OSError as exc:
         # A shellcheck that could not be launched is "could not run" (exit 2), never a false
         # clean or a traceback. Only reached when a bash/sh fence is
-        # present (else shellcheck is never invoked). Which fault it was -- absent, an
-        # over-long command line, or not startable at all -- is could_not_run_message's
+        # present (else shellcheck is never invoked). Which fault it was (absent, an
+        # over-long command line, or not startable at all) is could_not_run_message's
         # question, because the first two are indistinguishable by class.
         _print_error(could_not_run_message(exc, shellcheck))
         return 2

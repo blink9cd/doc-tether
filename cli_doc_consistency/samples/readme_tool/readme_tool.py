@@ -9,7 +9,7 @@ tool's pasted ``--help`` output in a fenced block. That block drifts on purpose:
 * the block says ``--limit`` defaults to 10; the code says 20 (Check B defaults, found
   only with ``--run-help``, which executes this file).
 
-This is a fixture, not a real tool -- it is excluded from the lint / gate walks via
+This is a fixture, not a real tool. It is excluded from the lint / gate walks via
 ``[tool.*] exclude`` in the repository's ``pyproject.toml``.
 """
 

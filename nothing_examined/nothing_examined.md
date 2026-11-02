@@ -1,7 +1,7 @@
 # nothing_examined.py
 
-Shared library (not a CLI) giving every tool that uses it one way to say **"this run examined
-nothing, because the excludes hid everything"** — the false clean that a bare
+Shared library (not a CLI) giving every tool that uses it one way to say "this run examined
+nothing, because the excludes hid everything": the false clean that a bare
 `Checked 0 …` line and exit status 0 cannot be told apart from.
 
 ## The problem it solves
@@ -18,10 +18,10 @@ That is produced by two very different situations:
 | Situation | What it means | Can it be a mistake? |
 | --- | --- | --- |
 | the tree holds no file of that type | a fact about the tree | no |
-| every candidate was pruned by the exclude set | a fact about the **configuration** | **yes** |
+| every candidate was pruned by the exclude set | a fact about the configuration | yes |
 
 Only the second can be wrong, and it is the one that hides. An `exclude` entry broader
-than its author meant — a bare `docs` where one file was intended — reports a clean gate
+than its author meant (a bare `docs` where one file was intended) reports a clean gate
 for a tree nobody is checking, indefinitely, and the broader the entry the quieter the
 failure. This module makes the second case say so, in the same words everywhere.
 
@@ -31,11 +31,11 @@ Every standing exclusion in a mature tree is intentional: a `samples/` fixture t
 a deliberate defect for hand-verification, a vendored third-party tree that is not the
 project's to lint. Failing on those would break every build that runs the check and train
 the reader to ignore it.
-The line addresses the risk by being **legible**, not by being fatal.
+The line addresses the risk by being legible, not by being fatal.
 
 ## API
 
-Both functions are pure — no I/O, no filesystem access, no knowledge of any particular
+Both functions are pure: no I/O, no filesystem access, no knowledge of any particular
 gate. The tool keeps sole ownership of *how* it discovers and prunes; this module owns only
 the rule for *when* to speak and the words to use.
 
@@ -44,8 +44,8 @@ the rule for *when* to speak and the words to use.
 | `hidden_count(examined, count_all)` | how many candidates the excludes hid, or `0` when anything was examined |
 | `note(hidden, *, noun, table, flag="--path")` | the `NOTHING EXAMINED` line, or `None` when nothing was hidden |
 
-`count_all` must re-run **the caller's own discovery** with its *configured* excludes off —
-the ones `note` blames — while keeping any prune that reflects what was never a candidate for
+`count_all` must re-run the caller's own discovery with its *configured* excludes off
+(the ones `note` blames) while keeping any prune that reflects what was never a candidate for
 those to hide. A wholly empty exclude set is the wrong baseline wherever a gate prunes on some
 other authority's answer: it counts those paths as concealed and pins them on a config table
 that never touched them. Passing the real discovery function rather than a reimplemented walk
@@ -60,8 +60,8 @@ passed (`--root` for `shellcheck_md`, or `--folder` for a gate that takes that).
 
 ## Usage
 
-Import it the way the tools here import `stdio_utf8` — a `sys.path` bootstrap resolved from
-the importing file's own location, so the tool stays location-independent:
+Import it the way the tools here import `stdio_utf8`, with a `sys.path` bootstrap resolved
+from the importing file's own location, so the tool stays location-independent:
 
 ```python
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "nothing_examined"))

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Which Markdown files a ``shellcheck_md`` run examines, and which excludes bind them.
 
-Private to ``shellcheck_md`` -- it lives in that folder's ``src/``, and nothing outside this
+Private to ``shellcheck_md``: it lives in that folder's ``src/``, and nothing outside this
 tool folder may import it. The name is specific rather than a bare ``selection.py``
 for the reason ``fence_findings`` gives: a tool's ``src/`` goes on ``sys.path``
 as a directory, so a generic module name would collide in a process importing two tools.
@@ -10,7 +10,7 @@ Two inputs reach a run. ``--root`` discovers files by glob, pruning caches, VCS 
 virtualenvs. Files named on the command line, as a pre-commit hook passes its staged files,
 are taken as named. Both answer to the same two exclude sources: ``--exclude`` and the
 ``[tool.shellcheck_md] exclude`` list in the nearest ``pyproject.toml`` holding that table,
-for EACH file. It also finds the ShellCheck rc file nearest each Markdown file, which the
+for each file. It also finds the ShellCheck rc file nearest each Markdown file, which the
 run copies beside the scripts lifted from it.
 
 Entry point assumptions
@@ -56,13 +56,13 @@ class UnreadableMarkdown(Exception):
 def read_config_excludes(start: Path, *, stop: Path | None = None) -> tuple[Path, ...]:
     """Resolved ``[tool.shellcheck_md] exclude`` paths from the nearest configuring pyproject.
 
-    Walks *start* and its ancestors for a ``pyproject.toml`` that HAS a
+    Walks *start* and its ancestors for a ``pyproject.toml`` that has a
     ``[tool.shellcheck_md]`` table, and reads its ``exclude`` (paths relative to that
     file's directory). A pyproject without the table is passed over, as ruff passes over
     one without ``[tool.ruff]``: a sub-project's unrelated pyproject must not cancel the
     excludes above it. No configuring pyproject, or a table with no ``exclude``, is
     ``()``. A malformed file, a table that is not a table, or a non-list / non-string
-    ``exclude`` raises :class:`ConfigError` -- config we cannot trust must stop the gate,
+    ``exclude`` raises :class:`ConfigError`: config we cannot trust must stop the gate,
     not silently shrink it. A malformed file stops the walk even without the table, since
     whether it has one cannot be known. *stop* (inclusive, when it is an ancestor) bounds
     the walk so tests do not climb into a real pyproject.
@@ -108,7 +108,7 @@ def should_exclude(path: Path, excludes: Sequence[Path]) -> bool:
 
 
 def _under_pruned_dir(path: Path, root: Path) -> bool:
-    """Return True if a component of *path* BELOW *root* is a default-pruned directory.
+    """Return True if a component of *path* below *root* is a default-pruned directory.
 
     Prunes node_modules / caches / VCS by name so a node project's dependency
     READMEs (and cache trees) are never lifted for shellcheck. Only the parts below
@@ -160,7 +160,7 @@ def select_named_files(
     The excludes still bind, as ruff's ``--force-exclude`` does for a pre-commit hook. Each
     file's standing excludes come from the nearest ``pyproject.toml`` configuring this tool
     (:func:`read_config_excludes`), since files can sit under different projects; each directory's answer is read once per call. A file
-    listed twice -- under two spellings, too -- is kept once, under the spelling given
+    listed twice (under two spellings, too) is kept once, under the spelling given
     first, because that is the one the caller will look for in the report. *stop* bounds
     the walk, as in :func:`read_config_excludes`. Raises :class:`ConfigError` for config it
     cannot trust.

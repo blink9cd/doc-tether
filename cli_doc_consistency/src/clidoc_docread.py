@@ -6,14 +6,14 @@ Private to ``cli_doc_consistency`` (it lives in that folder's ``src/``); see
 The two artifacts are the live ``--help`` text and the companion doc's option surface:
 its argument tables and any pasted ``--help`` block, which is read by the same parser as
 the live text. They are read side by side here because they are the same kind of work on the same
-subject -- recover structure from formatted prose that a formatter or an author may lay out
-differently on any given day -- and because the module that *compares* them wants both or
+subject (recover structure from formatted prose that a formatter or an author may lay out
+differently on any given day), and because the module that *compares* them wants both or
 neither. Their import sets agree too, which is the corroborating signal that this is one
 concern rather than two.
 
 Only the *argument tables*, the pasted ``--help`` blocks and the exit-code section of the
 doc are read here. Check C reads the same file for a stated version floor, and does it in
-``clidoc_floor`` beside the implied floor it compares against -- so "the ``.md`` parser" is
+``clidoc_floor`` beside the implied floor it compares against, so "the ``.md`` parser" is
 not one place, deliberately.
 
 Both parsers are deliberately conservative: where the layout cannot be read with
@@ -53,7 +53,7 @@ _COLUMN_GAP_RE = re.compile(r"\s{2,}")
 
 
 def _option_column_name(entry: str) -> str | None:
-    """The first long option in a help entry's OPTION COLUMN, or None.
+    """The first long option in a help entry's option column, or None.
 
     Only the column is searched, never the help text after it: a short-only option
     whose help says "see --retries (default: 8)" must not be read as --retries. Shared
@@ -74,7 +74,7 @@ _MAX_HELP_ENTRY_CHARS = 4096
 
 
 def _rendered_default(entry: str) -> str | None:
-    """The default in the entry's LAST ``(default: X)``, which must close the entry.
+    """The default in the entry's last ``(default: X)``, which must close the entry.
 
     Found with one ``rfind`` and a slice, never a regex scan from each marker: help
     text holding thousands of markers made that scan quadratic.
@@ -202,7 +202,7 @@ def parse_md_arg_tables(md_text: str) -> list[MdArgTable]:
     An arguments table is a Markdown table whose first header cell reads
     ``Argument`` / ``Option`` / ``Flag`` (any case). A subparser tool documents
     its options across one table per subcommand (``### setup arguments`` ...), so
-    all such tables are collected -- Check B matches an option against their union.
+    all such tables are collected: Check B matches an option against their union.
     """
     lines = md_text.splitlines()
     tables: list[MdArgTable] = []
@@ -240,7 +240,7 @@ def _option_default_cell(
     """The documented default cell for *name*, and whether it is unambiguous.
 
     Returns ``(True, cell)`` only when *name* appears in exactly one table that
-    has a ``Default`` column -- a subparser tool repeats an option (e.g. ``--pat``)
+    has a ``Default`` column. A subparser tool repeats an option (e.g. ``--pat``)
     across subcommand tables, and a default documented in several places is not an
     unambiguous single value, so it is skipped (``(False, None)``).
     """
@@ -273,10 +273,10 @@ _HELP_OPTION_LINE_RE = re.compile(r"^ {2}(-\S.*)$")
 
 
 # argparse's own option-section headings: a column-0 line whose title ends in
-# "arguments", "options" or "flags" -- "options:" / "optional arguments:" / "positional
-# arguments:", and argument groups titled that way. A heading equal to an argument-group
+# "arguments", "options" or "flags" ("options:" / "optional arguments:" / "positional
+# arguments:", and argument groups titled that way). A heading equal to an argument-group
 # title the AST declares opens a section too (see _is_section_heading). Option entries
-# are read ONLY inside a section, which runs until the next column-0 line, so an indented
+# are read only inside a section, which runs until the next column-0 line, so an indented
 # example under an epilog heading ("examples:") is not mistaken for an option.
 _OPTION_SECTION_RE = re.compile(r"(?i)^(?:\S.*\s)?(?:arguments|options|flags):\s*$")
 
@@ -294,7 +294,7 @@ def _fence_closer(fence: str) -> re.Pattern[str]:
 def _fenced_blocks(lines: Sequence[str]) -> Iterator[list[str]]:
     """Yield each fenced code block's body lines, with the fence's own indent removed.
 
-    A block closes at a line of the SAME fence character, at least as long as the opener
+    A block closes at a line of the same fence character, at least as long as the opener
     and carrying nothing else; a shorter or different fence inside it is content. An
     unclosed block runs to the end of the document, as CommonMark has it.
     """
@@ -341,7 +341,7 @@ def _is_section_heading(line: str, group_headings: AbstractSet[str]) -> bool:
     """True when column-0 *line* opens an option section.
 
     Either argparse's own heading shape (:data:`_OPTION_SECTION_RE`), or ``<title>:``
-    for an argument-group title the CLI declares -- compared case-insensitively, trailing
+    for an argument-group title the CLI declares, compared case-insensitively, trailing
     whitespace ignored, against *group_headings* (already lowercased, colon included).
     """
     return (
@@ -357,8 +357,8 @@ def _option_entries(
 
     A section opens at a heading :func:`_is_section_heading` accepts and closes at the
     next column-0 line; blank lines inside it (an argument group's description) do not
-    close it. Anything outside a section -- the description, the epilog and its
-    examples -- is never read as an option.
+    close it. Anything outside a section (the description, the epilog and its
+    examples) is never read as an option.
     """
     in_section = False
     for line in body:
@@ -375,7 +375,7 @@ def _help_block_table(
 ) -> MdArgTable:
     """Read one pasted ``--help`` block into the structure an arguments table becomes.
 
-    Each option entry (see :func:`_option_entries`) yields ONE name: the first long
+    Each option entry (see :func:`_option_entries`) yields one name: the first long
     option in its option column (the text before the first run of two spaces, so an
     option named in another option's help text is not mistaken for one). argparse
     renders option strings in the order they were declared, so that is exactly
@@ -401,7 +401,7 @@ def parse_md_help_blocks(
 
     A help block is a fenced code block (backtick or tilde, any info string) whose first
     non-blank line starts with ``usage:``, or is a prompt line ending in ``--help`` /
-    ``-h`` followed by a ``usage:`` line -- the README habit of pasting the tool's own
+    ``-h`` followed by a ``usage:`` line: the README habit of pasting the tool's own
     help. Check B unions these with the arguments tables, so a doc may use either shape.
 
     *group_titles* are the argument-group titles the CLI declares
@@ -417,7 +417,7 @@ def parse_md_help_blocks(
 
 
 def _unfenced_flags(lines: Sequence[str]) -> list[bool]:
-    """For each line, True when it lies OUTSIDE every fenced code block.
+    """For each line, True when it lies outside every fenced code block.
 
     A fence's own opening and closing lines count as inside. Used so a ``# comment`` in
     a fenced shell example is never taken for a Markdown heading.
@@ -460,7 +460,7 @@ def _section_after_heading(md_text: str, heading_regex: str) -> str | None:
 def parse_md_exit_codes(md_text: str) -> set[int] | None:
     """The exit codes an ``## Exit codes`` section documents, or None if no section.
 
-    Returning None (no dedicated section) means "not verifiable" -- Check B then
+    Returning None (no dedicated section) means "not verifiable": Check B then
     skips exit-code checking rather than guessing from scattered prose.
     """
     section = _section_after_heading(md_text, r"exit codes?")

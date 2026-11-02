@@ -6,7 +6,7 @@ It deliberately carries two drifts so a by-hand run shows real catches:
 * ``--count`` hardcodes ``(default: 5)`` in its help text (Check A).
 * ``--mode`` exists here but is missing from ``widget.md``'s table (Check B).
 
-This is a fixture, not a real tool -- it is excluded from the lint / gate walks
+This is a fixture, not a real tool. It is excluded from the lint / gate walks
 via ``[tool.*] exclude`` in the repository's ``pyproject.toml``.
 """
 
@@ -27,7 +27,7 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=5,
         # Drift on purpose: the literal "(default: 5)" double-prints under
-        # ArgumentDefaultsHelpFormatter -- exactly what Check A flags.
+        # ArgumentDefaultsHelpFormatter, which is exactly what Check A flags.
         help="Number of times to frob (default: 5).",
     )
     parser.add_argument("--verbose", action="store_true", help="Chatty output.")

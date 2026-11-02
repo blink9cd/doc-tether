@@ -1,8 +1,8 @@
-"""Grouped suite: Check C -- the stated version floor against the gated imports.
+"""Grouped suite: Check C, the stated version floor against the gated imports.
 
 Three layers of one check: the imports a module makes and the floor they imply (including a
-backport that lowers it again), where a floor is CLAIMED -- module docstring, parser epilog,
-a formatter subclass -- and the comparison that turns a mismatch into a finding. `_class_def`
+backport that lowers it again), where a floor is claimed (module docstring, parser epilog,
+a formatter subclass), and the comparison that turns a mismatch into a finding. `_class_def`
 lives here rather than in the shared fixtures because this is its only caller.
 """
 

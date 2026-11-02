@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Unit tests for argv_budget -- bare-runnable (python test_argv_budget.py).
+"""Unit tests for argv_budget, bare-runnable (python test_argv_budget.py).
 
-Every function is pure -- no filesystem, no subprocess -- so every branch is reachable
+Every function is pure (no filesystem, no subprocess), so every branch is reachable
 without a seam and 100% branch coverage needs no pragma.
 """
 
@@ -47,7 +47,7 @@ class RenderedLengthTest(unittest.TestCase):
 
 
 class ArgvLimitForTest(unittest.TestCase):
-    """Which ceiling binds is a property of what is LAUNCHED, not of the platform."""
+    """Which ceiling binds is a property of what is launched, not of the platform."""
 
     def test_cmd_and_bat_shims_get_the_cmd_ceiling(self) -> None:
         for name in ("C:/npm/markdownlint-cli2.CMD", "C:/npm/x.cmd", "C:/npm/x.BAT"):
@@ -112,7 +112,7 @@ class BatchPathsTest(unittest.TestCase):
         self.assertEqual([p for batch in batches for p in batch], paths)
 
     def test_the_split_lands_exactly_at_the_boundary(self) -> None:
-        """One path past the budget starts a NEW batch; it does not stretch the old one.
+        """One path past the budget starts a new batch; it does not stretch the old one.
 
         The off-by-one matters in the unforgiving direction: a batch allowed to stretch
         by one more path is a batch over the ceiling it was sized against.

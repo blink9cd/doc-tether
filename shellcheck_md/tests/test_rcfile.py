@@ -3,7 +3,7 @@
 ShellCheck looks for ``.shellcheckrc`` (or ``shellcheckrc``) beside the script it checks and
 in each parent directory. The extracted scripts live in a temporary directory, so that
 search never saw the project's rc file and its directives were silently ignored. The tool
-now finds the rc file nearest each MARKDOWN file and copies it, as ``.shellcheckrc``, into
+now finds the rc file nearest each Markdown file and copies it, as ``.shellcheckrc``, into
 the temporary subdirectory holding the scripts lifted from files that share it, so
 ShellCheck's own search finds the copy on every version. ``--rcfile`` is not used: it arrived
 only in ShellCheck 0.10.0. Scripts from a file with no rc file sit in a subdirectory with
@@ -145,7 +145,7 @@ def _can_symlink(directory: Path) -> bool:
 class SymlinkedRcfileTests(_TreeCase):
     """A symlinked rc file is refused, never followed into the temporary directory.
 
-    Copying through the link would read whatever file it names -- outside the project --
+    Copying through the link would read whatever file it names, outside the project too,
     and hand it to ShellCheck. The refusal is exit 2 and names the link, so the run is
     neither silently clean nor silently missing the project's directives.
     """

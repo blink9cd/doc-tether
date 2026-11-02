@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """Split a ``shellcheck_md`` command line at ``--files``: options before, file names after.
 
-Private to ``shellcheck_md`` -- it lives in that folder's ``src/``, and nothing outside this
+Private to ``shellcheck_md``: it lives in that folder's ``src/``, and nothing outside this
 tool folder may import it. The name is specific rather than a bare ``argv.py`` for the
 reason ``fence_findings`` gives: a tool's ``src/`` goes on ``sys.path`` as a
 directory, so a generic module name would collide in a process importing two tools.
 
 Why the split exists: pre-commit runs a hook's command with the staged file names appended,
 and this tool's hook command ends in ``--files``. Handed to argparse, those names are
-parsed like anything else, so a staged file NAMED like an option -- ``--shellcheck=<path>``,
-or any abbreviation argparse would accept -- became that option, and a file in the
+parsed like anything else, so a staged file named like an option (``--shellcheck=<path>``,
+or any abbreviation argparse would accept) became that option, and a file in the
 repository chose which executable ran as the backend. Only what precedes the first
 ``--files`` is parsed; every token after it is a file name, ``--files`` and ``--root``
 included.

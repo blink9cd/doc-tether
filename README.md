@@ -13,6 +13,26 @@ are the shared libraries the tools and their tests use, shipped with their own t
 
 Both install as pre-commit hooks and run directly from a clone; each section below says how.
 
+## Install
+
+Needs Python 3.12 or newer. Install into a virtual
+environment, because Homebrew and Debian Python refuse a
+system-wide `pip install`:
+
+```bash
+python3 -m venv .venv
+# shellcheck source=/dev/null # the activate script exists only once the line above has run
+source .venv/bin/activate
+pip install .
+```
+
+The commands below assume the venv is active, so `python`
+is the venv's interpreter.
+
+Run the install from the root of your clone. It puts the `shellcheck-md` and
+`cli-doc-consistency` commands on the venv's `PATH`, and ShellCheck with them. A pre-commit
+hook needs none of this: pre-commit builds an environment of its own.
+
 ## shellcheck_md
 
 A README's shell examples are code that no linter reads. A quoting mistake, an unset
@@ -84,28 +104,28 @@ as one:
 
 ### Run it directly
 
-From a clone, lint every Markdown file under a folder, or just the files you name:
+Once installed, lint every Markdown file under a folder, or just the files you name:
 
 ```bash
-python3.12 doc-tether/shellcheck_md/shellcheck_md.py --root docs
-python3.12 doc-tether/shellcheck_md/shellcheck_md.py --files README.md CONTRIBUTING.md
+shellcheck-md --root docs
+shellcheck-md --files README.md CONTRIBUTING.md
 ```
 
-Or install it, which puts a `shellcheck-md` command and ShellCheck itself on the
-environment's `PATH`:
+The script also runs straight from the clone, with `doc-tether` standing for the clone's
+path. It then uses the `shellcheck` on your `PATH`, since nothing installed one beside it:
 
 ```bash
-python3.12 -m pip install ./doc-tether
-shellcheck-md --root docs
+python doc-tether/shellcheck_md/shellcheck_md.py --root docs
 ```
 
 Exit codes: `0` clean, `1` ShellCheck reported findings, `2` the run could not be trusted: a
 `pyproject.toml` it could not read, a `--files` entry that is not a file, a Markdown file
-that is not UTF-8 text, a temporary script it could not write, a `.shellcheckrc` that is a symbolic link, or a ShellCheck that could
-not be started, outlasted `--timeout-seconds`, or exited with a status that carries no
-verdict. When ShellCheck reports that it could not process some blocks, or a later run of it
-reaches no verdict, the findings already made are printed before the exit `2`. Every option
-is in [`shellcheck_md/shellcheck_md.md`](shellcheck_md/shellcheck_md.md).
+that is not UTF-8 text, a temporary script it could not write, a `.shellcheckrc` that is a
+symbolic link, or a ShellCheck that could not be started, outlasted `--timeout-seconds`, or
+exited with a status that carries no verdict. When ShellCheck reports that it could not
+process some blocks, or a later run of it reaches no verdict, the findings already made are
+printed before the exit `2`. Every option is in
+[`shellcheck_md/shellcheck_md.md`](shellcheck_md/shellcheck_md.md).
 
 ### How a finding points back at your doc
 
@@ -119,7 +139,7 @@ Checked 2 Markdown file(s): 1 shellcheck finding(s).
 ```
 
 That output is the shipped sample's, from
-`python3.12 shellcheck_md.py --root samples --lang ksh` run inside `shellcheck_md/`;
+`python shellcheck_md.py --root samples --lang ksh` run inside `shellcheck_md/`;
 [`shellcheck_md/samples/README.md`](shellcheck_md/samples/README.md) walks through it.
 
 ### Known limits
@@ -231,18 +251,18 @@ Do that only for code you trust, and not on pull requests you do not.
 
 ### Run it directly
 
-From a clone, check every CLI under a folder, or one tool against a README:
+Once installed, check every CLI under a folder, or one tool against a README:
 
 ```bash
-python3.12 doc-tether/cli_doc_consistency/cli_doc_consistency.py --path src
-python3.12 doc-tether/cli_doc_consistency/cli_doc_consistency.py --path src/tool.py --doc README.md
+cli-doc-consistency --path src
+cli-doc-consistency --path src/tool.py --doc README.md
 ```
 
-Or install it, which puts a `cli-doc-consistency` command on the environment's `PATH`:
+The script also runs straight from the clone, with `doc-tether` standing for the clone's
+path:
 
 ```bash
-python3.12 -m pip install ./doc-tether
-cli-doc-consistency --path src
+python doc-tether/cli_doc_consistency/cli_doc_consistency.py --path src
 ```
 
 A `[tool.cli_doc_consistency]` table in the nearest `pyproject.toml` at or above `--path` can
@@ -265,8 +285,8 @@ That executes the tool's module-level code and whatever its `--help` path runs. 
 a doc that states defaults gets one note saying they were not checked.
 
 `run_help = true` in `[tool.cli_doc_consistency]` turns the same step on, and that
-`pyproject.toml` is normally inside the tree being checked, so **a repository you did not
-write can turn execution on by itself.** To check a tree you do not trust, pass
+`pyproject.toml` is normally inside the tree being checked, so a repository you did not
+write can turn execution on by itself. To check a tree you do not trust, pass
 `--no-run-help`: it overrides both `--run-help` and the config, and nothing under `--path` is
 executed.
 
@@ -294,29 +314,30 @@ executed.
 ## Running the tests
 
 The suites need Hypothesis, at the version the `test` extra in `pyproject.toml` pins.
-Installing the package with that extra brings it:
+Installing the package with that extra, from the clone's root with the venv active, brings
+it:
 
 ```bash
-python3.12 -m pip install './doc-tether[test]'
+pip install '.[test]'
 ```
 
-Each suite then runs from its own folder's test file. Only shellcheck_md's live boundary
-cases run the real ShellCheck, against temporary files and an rc file of their own, and they
-skip when none is on your `PATH`; one more starts a stand-in script in its place.
-cli_doc_consistency's live cases run small tools of their own, written to a temporary
-folder, with the interpreter running the suite:
+Each suite then runs from its own folder's test file, here from the clone's root. Only
+shellcheck_md's live boundary cases run the real ShellCheck, against temporary files and an
+rc file of their own, and they skip when none is on your `PATH`; one more starts a stand-in
+script in its place. cli_doc_consistency's live cases run small tools of their own, written
+to a temporary folder, with the interpreter running the suite:
 
 ```bash
-python3.12 doc-tether/shellcheck_md/test_shellcheck_md.py
-python3.12 doc-tether/cli_doc_consistency/test_cli_doc_consistency.py
-python3.12 doc-tether/argv_budget/test_argv_budget.py
-python3.12 doc-tether/bounded_run/test_bounded_run.py
-python3.12 doc-tether/help_formatter/test_help_formatter.py
-python3.12 doc-tether/live_pid_guard/test_live_pid_guard.py
-python3.12 doc-tether/nothing_examined/test_nothing_examined.py
-python3.12 doc-tether/pyproject_config/test_pyproject_config.py
-python3.12 doc-tether/stdio_utf8/test_stdio_utf8.py
-python3.12 doc-tether/venv_prune/test_venv_prune.py
+python shellcheck_md/test_shellcheck_md.py
+python cli_doc_consistency/test_cli_doc_consistency.py
+python argv_budget/test_argv_budget.py
+python bounded_run/test_bounded_run.py
+python help_formatter/test_help_formatter.py
+python live_pid_guard/test_live_pid_guard.py
+python nothing_examined/test_nothing_examined.py
+python pyproject_config/test_pyproject_config.py
+python stdio_utf8/test_stdio_utf8.py
+python venv_prune/test_venv_prune.py
 ```
 
 ## License

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """What one shellcheck invocation looks like, and what its result means.
 
-Private to ``shellcheck_md`` -- it lives in that folder's ``src/``, and nothing outside this
+Private to ``shellcheck_md``: it lives in that folder's ``src/``, and nothing outside this
 tool folder may import it. The name is specific rather than a bare ``invocation.py``
 for the reason ``fence_findings`` gives: a tool's ``src/`` goes on ``sys.path``
 as a directory, so a generic module name would collide in a process importing two tools.
@@ -33,8 +33,8 @@ from pathlib import Path
 import argv_budget
 from fence_findings import BatchParse, Finding
 
-# shellcheck's machine-readable output format, and the head of every argv this tool sends
-# -- named once so the width charged to each batch is measured from the same list that is
+# shellcheck's machine-readable output format, and the head of every argv this tool sends,
+# named once so the width charged to each batch is measured from the same list that is
 # actually sent (see build_shellcheck_args).
 GCC_FORMAT_FLAG = "--format=gcc"
 
@@ -43,8 +43,8 @@ GCC_FORMAT_FLAG = "--format=gcc"
 OUTPUT_TAIL_LINES = 20
 
 # Windows' ERROR_FILENAME_EXCED_RANGE: what CreateProcess returns when the command line is
-# too long. CPython raises it as FileNotFoundError -- the SAME class, and the same errno 2,
-# as a genuinely absent executable -- so `winerror` is the only thing that separates them,
+# too long. CPython raises it as FileNotFoundError, the same class and the same errno 2
+# as a genuinely absent executable, so `winerror` is the only thing that separates them,
 # and reporting the wrong one sends a reader after a PATH problem that does not exist.
 WINERROR_COMMAND_LINE_TOO_LONG = 206
 
@@ -74,7 +74,7 @@ class IncompleteRun(Exception):
     """shellcheck exited 2: some scripts were not processed, so *findings* is partial.
 
     Raised only after every batch has run, carrying every finding they produced, so the
-    caller can print what WAS found before reporting that the run was incomplete.
+    caller can print what was found before reporting that the run was incomplete.
     """
 
     def __init__(self, findings: Sequence[Finding], detail: str) -> None:
@@ -103,7 +103,7 @@ def resolve_default_shellcheck(
 def build_shellcheck_args(shellcheck: str, script_paths: Sequence[Path]) -> list[str]:
     """The exact argv one shellcheck invocation receives.
 
-    One owner for the command line, because it is both SENT and MEASURED: the splitter
+    One owner for the command line, because it is both sent and measured: the splitter
     sizes each batch against this function's output with no paths, so a flag added here
     is charged to every batch automatically instead of quietly eating into the budget. A
     project's rc file travels as a file beside the scripts, not as a flag (see
@@ -124,7 +124,7 @@ def chunk_script_paths(
     The shellcheck-specific half of the split, and the only half that belongs here: this
     tool's own argv head, measured from :func:`build_shellcheck_args` so it matches what is
     emitted. The measuring, the splitting, and the never-drop-a-path rule are
-    ``argv_budget``'s -- see ``argv_budget.md``.
+    ``argv_budget``'s; see ``argv_budget.md``.
 
     Paths are rendered bare (``str``), which is ``batch_paths``' default: shellcheck takes a
     plain filename, so no path needs a prefix or an escape.
@@ -212,19 +212,19 @@ def could_not_run_message(exc: OSError, shellcheck: str) -> str:
     Two unrelated faults arrive as ``FileNotFoundError`` carrying the same ``errno``: the
     executable is absent (``winerror`` 2), or the command line was too long for the OS to
     accept (``winerror`` 206). Only the latter attribute separates them, and calling an
-    overflow "not found on PATH" is the expensive way to be wrong -- it sends a reader to
+    overflow "not found on PATH" is the expensive way to be wrong: it sends a reader to
     reinstall a backend that is present and working. Any other ``OSError`` (a file that is
     not executable, say) is named with its own text.
 
     ``getattr`` rather than ``exc.winerror``: the attribute exists only on Windows, and on
-    a POSIX host the overflow this names cannot arise -- ``ARG_MAX`` is far larger, and the
+    a POSIX host the overflow this names cannot arise: ``ARG_MAX`` is far larger, and the
     kernel reports ``E2BIG`` rather than through this channel.
     """
     if getattr(exc, "winerror", None) == WINERROR_COMMAND_LINE_TOO_LONG:
         return (
             f"ERROR: shellcheck executable {shellcheck!r} could not be started: the "
             f"command line was too long (WinError {WINERROR_COMMAND_LINE_TOO_LONG}). The "
-            "executable is present -- the argv carrying the extracted scripts exceeded "
+            "executable is present; the argv carrying the extracted scripts exceeded "
             "the OS ceiling despite the per-batch split, so report this rather than "
             "reinstalling shellcheck"
         )

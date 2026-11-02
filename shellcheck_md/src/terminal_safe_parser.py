@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The argument parser ``shellcheck_md`` builds its CLI on: every message safe for a terminal.
 
-Private to ``shellcheck_md`` -- it lives in that folder's ``src/``, and nothing outside this
+Private to ``shellcheck_md``: it lives in that folder's ``src/``, and nothing outside this
 tool folder may import it. The name is specific rather than a bare ``parser.py`` for the
 reason ``fence_findings`` gives: a tool's ``src/`` goes on ``sys.path`` as a
 directory, so a generic module name would collide in a process importing two tools.
@@ -39,7 +39,7 @@ class MessageSink(Protocol):
 class TerminalSafeParser(stdio_utf8.EscapingArgumentParser):
     """The escaping parser, with each line of its messages spelled safe for a terminal.
 
-    argparse's own line breaks stay real, so a usage block keeps its shape -- the same
+    argparse's own line breaks stay real, so a usage block keeps its shape: the same
     treatment ``shellcheck_md`` gives the messages it writes itself.
     """
 

@@ -1,4 +1,4 @@
-"""Grouped suite: driving shellcheck -- the run seam and its wall-clock bound.
+"""Grouped suite: driving shellcheck through the run seam, and its wall-clock bound.
 
 Covers lint_markdown end to end against a faked seam: blocks reaching disk as LF, findings
 remapped, and the bound reaching each call rather than only the outer loop.
@@ -135,7 +135,7 @@ class TimeoutBoundTests(unittest.TestCase):
 
     def test_timeout_option_is_documented_in_help(self) -> None:
         # Driven through the CLI rather than build_parser() deliberately: what is pinned
-        # here is the RENDERED text a reader sees, which only argparse's own --help path
+        # here is the rendered text a reader sees, which only argparse's own --help path
         # produces. The parser-to-formatter binding is asserted separately, in test_cli.
         with mock.patch("sys.stdout", io.StringIO()) as out:
             with self.assertRaises(SystemExit):

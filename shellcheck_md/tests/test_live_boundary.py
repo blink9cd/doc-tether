@@ -1,6 +1,6 @@
 """Grouped suite: the process boundary, crossed for real rather than faked.
 
-Every other suite replaces the run seam, which is what keeps them host-independent -- and
+Every other suite replaces the run seam, which is what keeps them host-independent, and
 also why none of them could see the seam drop ShellCheck's exit status. These cases start
 a real process. One stands a tiny executable in for ShellCheck and always runs; the rest
 run the real ShellCheck and skip, saying why, on a host that has none.

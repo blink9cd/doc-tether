@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Where the extracted scripts are written, so ShellCheck finds each project's rc file.
 
-Private to ``shellcheck_md`` -- it lives in that folder's ``src/``, and nothing outside this
+Private to ``shellcheck_md``: it lives in that folder's ``src/``, and nothing outside this
 tool folder may import it. The name is specific rather than a bare ``scratch.py`` for
 the reason ``fence_findings`` gives: a tool's ``src/`` goes on ``sys.path`` as a
 directory, so a generic module name would collide in a process importing two tools.
@@ -66,8 +66,8 @@ def _group_directory(directory: Path, serial: int, rcfile: Path | None) -> Path:
             f"could not write the extracted scripts' folder {folder}: {exc}"
         ) from exc
     if rcfile is not None:
-        # Copying follows a symlink, so a link would read whatever file it names --
-        # outside the project, possibly -- into the temporary directory. Refused, not
+        # Copying follows a symlink, so a link would read whatever file it names
+        # (outside the project, possibly) into the temporary directory. Refused, not
         # skipped: skipping would silently drop the project's directives.
         if rcfile.is_symlink():
             raise ScratchWriteError(
@@ -103,7 +103,7 @@ def stage_scripts(
     """Write each block as a script under *directory*, one subdirectory per rc file.
 
     Returns the lookup that maps a reported path back to its block, and the scripts
-    grouped so that every script in a group shares one subdirectory -- and so one rc
+    grouped so that every script in a group shares one subdirectory, and so one rc
     file. *find_rcfile* names the rc file for a Markdown directory (or None); each
     directory is asked once. Groups come in the order their first script was written.
     """

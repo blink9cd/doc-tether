@@ -1,4 +1,4 @@
-"""Check C: the Python floor a module STATES, against the floor its imports IMPLY.
+"""Check C: the Python floor a module states, against the floor its imports imply.
 
 Private to ``cli_doc_consistency`` (it lives in that folder's ``src/``); see
 ``clidoc_model`` for why every module here carries the tool's prefix.
@@ -6,8 +6,8 @@ Private to ``cli_doc_consistency`` (it lives in that folder's ``src/``); see
 The check is a comparison between two readings of one module, and both readings live here
 because neither is useful alone. The implied floor comes from the imports: a stdlib module
 that only exists from a given version raises the floor, unless a backport of it is also
-imported. The stated floors come from the prose -- the module docstring, the parser's
-epilog, and the companion ``.md`` -- each of which a human wrote and any of which can go
+imported. The stated floors come from the prose (the module docstring, the parser's
+epilog, and the companion ``.md``), each of which a human wrote and any of which can go
 stale independently, which is why every stale location is reported rather than just the
 first.
 
@@ -34,7 +34,7 @@ from clidoc_model import CHECK_C, SEVERITY_GATING, Claim, Finding
 
 
 # stdlib modules that only exist from a given Python; importing one raises the
-# effective floor. "tomli" is the PyPI backport of tomllib, NOT a stdlib module,
+# effective floor. "tomli" is the PyPI backport of tomllib, not a stdlib module,
 # so it is deliberately absent here and instead recorded as tomllib's backport.
 VERSION_GATED_STDLIB: dict[str, tuple[int, int]] = {
     "tomllib": (3, 11),
@@ -65,7 +65,7 @@ def collect_imports(tree: ast.Module) -> tuple[set[str], set[str]]:
     """Return ``(hard, all)`` import module names.
 
     ``hard`` is the set imported *unconditionally at module scope* (directly in
-    the module body) -- only these raise the floor, so a lazy or ``try/except``
+    the module body). Only these raise the floor, so a lazy or ``try/except``
     guarded import never causes a false positive. ``all`` is every import
     anywhere, used to spot a backport (e.g. ``tomli``) that neutralizes a gate.
     """
@@ -162,7 +162,7 @@ def _floor_claim_texts(tree: ast.Module) -> list[tuple[str, int]]:
     Only the module docstring, any help-formatter class docstring, and the
     argparse ``epilog`` state a deployment floor.
     Restricting to these deliberately ignores a floor mentioned illustratively in
-    some other comment, help string, or function docstring -- that is not a claim
+    some other comment, help string, or function docstring: that is not a claim
     about *this* tool's supported runtime.
     """
     texts: list[tuple[str, int]] = []

@@ -1,6 +1,6 @@
 """Grouped suite: shellcheck's output back into source-mapped findings, and the report.
 
-The pure back half -- parsing one gcc-format line, remapping it onto its Markdown source,
+The pure back half: parsing one gcc-format line, remapping it onto its Markdown source,
 and rendering the run's report (including the NOTHING EXAMINED caveat). Separated from the
 front half because a failure here means the tool misread shellcheck, not that it misread
 Markdown.
@@ -65,12 +65,12 @@ class ReportTests(unittest.TestCase):
 
 
 class NothingExaminedWiringTest(unittest.TestCase):
-    """The gate must SAY it examined nothing when the excludes hid every candidate.
+    """The gate must say it examined nothing when the excludes hid every candidate.
 
     A bare "0 checked" + PASS is indistinguishable from a verified-clean run, so an
     exclude broader than its author meant would report a clean gate forever. The wording
     and the when-to-speak rule are tested exhaustively in nothing_examined's own suite; this
-    only pins that this tool WIRES them into its report -- including that it cites --root,
+    only pins that this tool wires them into its report, including that it cites --root,
     the target option this gate actually takes.
     """
 
@@ -117,7 +117,7 @@ class RemapColumnTests(unittest.TestCase):
 
 class IndentedBlockFindingTests(unittest.TestCase):
     """End of the round trip: a finding inside a list-nested fence lands on the
-    real Markdown line AND the real Markdown column."""
+    real Markdown line and the real Markdown column."""
 
     def test_finding_maps_to_source_line_and_column(self) -> None:
         block = sut.ShellBlock(

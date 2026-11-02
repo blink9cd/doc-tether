@@ -1,19 +1,19 @@
-"""Grouped suite: the argv ceiling -- splitting the batch, and naming an overflow correctly.
+"""Grouped suite: the argv ceiling, splitting the batch and naming an overflow correctly.
 
 Two failures that look like one. A tree large enough to put every extracted script on a
 single command line overflows the OS ceiling, and Windows reports that as ``WinError 206``,
-which CPython raises as ``FileNotFoundError`` -- the same class a genuinely absent executable
+which CPython raises as ``FileNotFoundError``: the same class a genuinely absent executable
 raises, carrying the same ``errno``. So this module pins both halves of the defense: the
 split that stops the overflow happening, and the diagnostic that tells the two apart if one
 ever does.
 
 The reproduction that prompted it: 528 discovered Markdown files lifted into one shellcheck
 argv, refused by the OS, and reported as "could not run shellcheck executable 'shellcheck'
-(not found on PATH or at that path)" -- naming a backend that was present and runnable.
+(not found on PATH or at that path)", naming a backend that was present and runnable.
 
-Every count below is DERIVED, never a literal. The extracted scripts live in a temp
-directory whose width belongs to the platform -- a POSIX ``/tmp/tmpXXXXXXXX`` entry
-renders about thirty characters shorter than its Windows equivalent -- so a block count
+Every count below is derived, never a literal. The extracted scripts live in a temp
+directory whose width belongs to the platform (a POSIX ``/tmp/tmpXXXXXXXX`` entry
+renders about thirty characters shorter than its Windows equivalent), so a block count
 sized against one host stops overflowing on a shorter one, and these tests keep passing
 over a single batch, proving nothing. That is not hypothetical: this module shipped a
 hardcoded 600 and was green on Windows while asserting nothing on Linux or macOS.
@@ -99,7 +99,7 @@ class ChunkScriptPathsTests(unittest.TestCase):
 
 
 #: Filename of the generated Markdown fixture. The writer and the measurement share it
-#: because ``_script_name`` embeds the source's STEM in every script path -- sizing a batch
+#: because ``_script_name`` embeds the source's stem in every script path. Sizing a batch
 #: against one name while writing another measures a command line that is never sent.
 _MARKDOWN_NAME = "many.md"
 
@@ -133,8 +133,8 @@ def script_paths_for(script_dir: Path, count: int) -> list[Path]:
 def batches_for(script_dir: Path, count: int) -> list[list[Path]]:
     """How production would split *count* blocks' scripts written under *script_dir*.
 
-    The tool's own chunker is the oracle. Asking it how many batches it will make -- at
-    the same ceiling and the same default backend the run itself uses -- is what keeps
+    The tool's own chunker is the oracle. Asking it how many batches it will make, at
+    the same ceiling and with the same default backend the run itself uses, is what keeps
     the search honest when the ceiling, the headroom or the argv head changes.
     """
     return sut.chunk_script_paths(
@@ -145,15 +145,15 @@ def batches_for(script_dir: Path, count: int) -> list[list[Path]]:
 
 
 def over_ceiling_block_count(script_dir: Path) -> int:
-    """Fenced-block count whose extracted scripts CANNOT fit one shellcheck argv.
+    """Fenced-block count whose extracted scripts cannot fit one shellcheck argv.
 
     *script_dir* stands in for the temp directory ``lint_markdown`` opens for those
     scripts: ``TemporaryDirectory`` names every one of them off the same base with the
     same eight-character suffix, so a directory the caller already holds renders to the
     width the real run will pay, exactly.
 
-    Derived rather than hardcoded because that width is the platform's, not ours -- see
-    the module docstring for what a literal did here. Growing by doubling: overshooting
+    Derived rather than hardcoded because that width is the platform's, not ours (see
+    the module docstring for what a literal did here). Growing by doubling: overshooting
     costs a few more temp files, undershooting costs the whole point of the test.
     """
     count = _SEED_BLOCKS
@@ -163,7 +163,7 @@ def over_ceiling_block_count(script_dir: Path) -> int:
 
 
 class LintMarkdownBatchingTests(unittest.TestCase):
-    """lint_markdown must SPLIT a real over-ceiling subject set, and merge every batch."""
+    """lint_markdown must split a real over-ceiling subject set, and merge every batch."""
 
     @staticmethod
     def _write_blocks(directory: Path) -> tuple[Path, int]:
@@ -267,7 +267,7 @@ class CouldNotRunDiagnosticTests(unittest.TestCase):
         reads it through ``getattr``: typeshed declares ``OSError.winerror`` only under
         sys.platform == "win32", so a plain ``exc.winerror = ...`` is an attr-defined error
         everywhere else. A
-        ``# type: ignore`` would be the WRONG repair -- the attribute genuinely exists on
+        ``# type: ignore`` would be the wrong repair: the attribute genuinely exists on
         Windows, so the ignore is unused there and inverts into a failure the moment
         warn_unused_ignores is turned on. setattr is correct on all three platforms at once.
         The runtime is unaffected: BaseException carries a __dict__, so the attribute is set

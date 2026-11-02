@@ -125,7 +125,7 @@ class TerminalSafeReportTest(_ScratchMixin):
 
     def _assert_safe(self, text: str) -> None:
         self.assertNotIn("\x1b", text)
-        # A forged verdict is a LINE of its own in the verdict's shape; the escaped text
+        # A forged verdict is a line of its own in the verdict's shape; the escaped text
         # may still contain the words, inside the finding's own line. Exactly one such
         # line may exist: the real one, last, and saying FAIL.
         lines = text.rstrip("\n").splitlines()

@@ -7,24 +7,24 @@ each, runs the checks below, which lint / tests / coverage do *not* catch. Each 
 is paired with its sibling ``<name>.md``, or, for a single-file ``--path``, with the
 doc ``--doc`` names (a README, say).
 
-* **Check A -- hardcoded default (AST only).** A ``help=`` string / f-string
+* **Check A: hardcoded default (AST only).** A ``help=`` string / f-string
   literal that contains ``"(default"`` but no ``%(default)`` token: argparse's
   ``ArgumentDefaultsHelpFormatter`` appends its own ``(default: X)``, so the
   hand-written one double-prints and drifts.
-* **Check B -- the doc mirrors the CLI (AST; a live ``--help`` only on request).**
+* **Check B: the doc mirrors the CLI (AST; a live ``--help`` only on request).**
   The doc must document every option, and must not document one that does not
   exist, in an arguments table or a pasted ``--help`` block (a fenced block whose
   first line starts with ``usage:``). It is deliberately *conservative*: it
   hard-fails only on an unambiguous mismatch (an option present in the parser but
   absent from the doc, or vice-versa; with ``--run-help``, a purely-numeric default
   that clearly contradicts; a doc with neither a table nor a block). Anything it
-  cannot parse with confidence -- a paraphrased default, exit codes -- is reported
+  cannot parse with confidence (a paraphrased default, exit codes) is reported
   as advisory.
-* **Check C -- stated floor vs imports.** A module that imports a
+* **Check C: stated floor vs imports.** A module that imports a
   version-gated stdlib module (e.g. ``tomllib`` needs 3.11) while its docstring,
   epilog, or ``.md`` states a *lower* ``3.x+`` floor is flagged at every stale
   location.
-* **Check D -- no positional arguments (AST only; opt-in).** With
+* **Check D: no positional arguments (AST only; opt-in).** With
   ``--check-positionals``, an ``add_argument`` whose first argument is a string
   literal that does not start with ``-`` defines a positional argument, and
   user-facing CLI arguments should be named options, so it is flagged. A first
@@ -74,22 +74,22 @@ import help_formatter  # noqa: E402 - import follows the sys.path bootstrap abov
 import stdio_utf8  # noqa: E402 - import follows the sys.path bootstrap above
 
 # bounded_run is the shared bounded-capture run seam, resolved the same way: a
-# capturing subprocess.run with a timeout does NOT bound a child that spawns its own
+# capturing subprocess.run with a timeout does not bound a child that spawns its own
 # children, because the kill reaches only the direct child.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "bounded_run"))
 
 import bounded_run  # noqa: E402 - import follows the sys.path bootstrap above
 
 # nothing_examined is the shared library owning the one wording for "the exclude set
-# pruned every candidate, so this result verifies nothing" -- resolved from this file's
+# pruned every candidate, so this result verifies nothing", resolved from this file's
 # own location like stdio_utf8 above. The report renderer needs it
 # too and bootstraps it again, so that module imports standalone.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "nothing_examined"))
 
 import nothing_examined  # noqa: E402 - import follows the sys.path bootstrap above
 
-# The clidoc_* modules below are this tool's OWN private modules, in its `src/` dir --
-# resolved from this file's location one level DOWN, unlike the
+# The clidoc_* modules below are this tool's own private modules, in its `src/` dir,
+# resolved from this file's location one level down, unlike the
 # siblings above. venv_prune and pyproject_config are not bootstrapped here: clidoc_targets,
 # their only caller, bootstraps them itself.
 sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
@@ -126,7 +126,7 @@ from clidoc_targets import (  # noqa: E402 - import follows the sys.path bootstr
     read_config_switches,
 )
 
-# The AST reader. None is called here -- every name is a re-export for the suites.
+# The AST reader. None is called here: every name is a re-export for the suites.
 from clidoc_astcli import (  # noqa: E402,F401 - E402 follows the bootstrap; F401 are re-exports
     _int_constants,
     argument_group_titles,
@@ -160,7 +160,7 @@ from clidoc_floor import (  # noqa: E402,F401 - E402 follows the bootstrap; F401
     stated_floors,
 )
 
-# Check B's artifact parsers. None is called here -- every name is a re-export.
+# Check B's artifact parsers. None is called here: every name is a re-export.
 from clidoc_docread import (  # noqa: E402,F401 - E402 follows the bootstrap; F401 are re-exports
     _build_arg_table,
     _default_column_index,
@@ -218,7 +218,7 @@ def _failed_render(returncode: int, stderr: str) -> RenderFailure:
 def _render_help(tool_path: Path, python: str) -> str | RenderFailure:
     """Run ``<python> <tool_path> --help`` and return its stdout, or why it failed.
 
-    This EXECUTES the target, which is why only ``--run-help`` / ``run_help`` reaches it.
+    This executes the target, which is why only ``--run-help`` / ``run_help`` reaches it.
 
     A missing interpreter, an import error in the tool, or a timeout all yield a
     :class:`RenderFailure` so Check B falls back to the source's literal defaults, and
@@ -276,10 +276,15 @@ def analyze_file(
 
 
 def build_parser() -> argparse.ArgumentParser:
-    """Named-options-only CLI (prog from argv[0], never a literal); defaults shown in --help."""
+    """Named-options-only CLI (prog from argv[0], never a literal); set defaults shown in --help.
+
+    Each flag defaults to ``None``, not ``False``, so ``--help`` prints no
+    ``(default: False)``: the formatter hides an unset default, and a flag left out reads
+    as unset. The callers below coerce each one with ``bool``.
+    """
     parser = argparse.ArgumentParser(
         description="Catch doc-vs-code drift in Python argparse CLI tools.",
-        formatter_class=help_formatter.ReqAwareDefaultsFormatter,
+        formatter_class=help_formatter.UnsetHidingFormatter,
         epilog=(
             "Runs standalone (Python 3.11+, for the stdlib tomllib). Discovers CLI "
             "files (a .py that constructs argparse.ArgumentParser), pairs each with "
@@ -289,7 +294,7 @@ def build_parser() -> argparse.ArgumentParser:
             "the AST; a missing companion doc gates unless --allow-missing-doc is "
             "passed), and Check C (stated floor vs version-gated imports). Two "
             "opt-ins, each a flag or a [tool.cli_doc_consistency] key: --run-help / "
-            "run_help EXECUTES '<python> <tool> --help' to compare documented "
+            "run_help executes '<python> <tool> --help' to compare documented "
             "defaults. That config is the nearest pyproject.toml above --path, so the "
             "scanned tree's own config can turn execution on: scan a tree you do not "
             "trust with --no-run-help, which beats both. --check-positionals / "
@@ -313,11 +318,15 @@ def build_parser() -> argparse.ArgumentParser:
         help="File/dir to skip while walking (repeatable); unioned with the pyproject table.",
     )
     parser.add_argument(
-        "--json", action="store_true", help="Emit a machine-readable JSON report."
+        "--json",
+        action="store_true",
+        default=None,
+        help="Emit a machine-readable JSON report.",
     )
     parser.add_argument(
         "--allow-missing-doc",
         action="store_true",
+        default=None,
         help="Downgrade a missing companion .md from gating to advisory.",
     )
     parser.add_argument(
@@ -332,18 +341,21 @@ def build_parser() -> argparse.ArgumentParser:
     execution.add_argument(
         "--run-help",
         action="store_true",
-        help="EXECUTE '<python> <tool> --help' to compare documented defaults "
+        default=None,
+        help="Execute '<python> <tool> --help' to compare documented defaults "
         "(also on with run_help = true in the config).",
     )
     execution.add_argument(
         "--no-run-help",
         action="store_true",
+        default=None,
         help="Never execute the target, whatever the scanned tree's own config says; "
         "use it to scan a tree you do not trust.",
     )
     parser.add_argument(
         "--check-positionals",
         action="store_true",
+        default=None,
         help="Flag positional CLI arguments, Check D (also on with "
         "check_positionals = true in the config).",
     )
@@ -393,7 +405,7 @@ def _read_doc(md_path: Path) -> str:
 def _discover(path: Path, excludes: Sequence[Path]) -> tuple[list[Path], int]:
     """The CLI files under *path*, and how many the excludes hid when none remain.
 
-    A run that examined NOTHING must not read as verified-clean, so the hidden count
+    A run that examined nothing must not read as verified-clean, so the hidden count
     re-runs discovery unfiltered (see nothing_examined). Raises :class:`TargetError`.
     """
     targets = discover_cli_files(path, excludes, read_text=_read_source)
@@ -422,7 +434,7 @@ def _usage_error(path: Path, doc: str | None) -> str | None:
 def _effective_switches(args: argparse.Namespace, path: Path) -> ConfigSwitches:
     """The config's opt-ins, each also turned on by its flag; ``--no-run-help`` beats both.
 
-    The config is the nearest pyproject above ``--path``, which sits INSIDE the scanned
+    The config is the nearest pyproject above ``--path``, which sits inside the scanned
     tree, so that tree can switch execution on by itself. ``--no-run-help`` is the
     caller's override that the tree cannot undo.
 
@@ -430,8 +442,8 @@ def _effective_switches(args: argparse.Namespace, path: Path) -> ConfigSwitches:
     """
     config = read_config_switches(path)
     return ConfigSwitches(
-        run_help=not args.no_run_help and (config.run_help or args.run_help),
-        check_positionals=config.check_positionals or args.check_positionals,
+        run_help=not args.no_run_help and (config.run_help or bool(args.run_help)),
+        check_positionals=config.check_positionals or bool(args.check_positionals),
     )
 
 
@@ -465,12 +477,12 @@ def main(argv: list[str] | None = None) -> int:
             sys.executable,
             switches=switches,
             doc=Path(args.doc) if args.doc is not None else None,
-            allow_missing_doc=args.allow_missing_doc,
+            allow_missing_doc=bool(args.allow_missing_doc),
         )
     except TargetError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
-    print(format_report(results, parser.prog, as_json=args.json, hidden=hidden))
+    print(format_report(results, parser.prog, as_json=bool(args.json), hidden=hidden))
     gating = any(f.severity == SEVERITY_GATING for fs in results.values() for f in fs)
     return 1 if gating else 0
 

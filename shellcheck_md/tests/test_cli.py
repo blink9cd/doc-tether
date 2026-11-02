@@ -1,4 +1,4 @@
-"""Grouped suite: the CLI surface -- exit codes, options, and the --help contract.
+"""Grouped suite: the CLI surface, meaning exit codes, options, and the --help contract.
 
 main()'s three exit codes and the parser's binding to the shared help formatter. A failure
 here is about what the process reports, not about what it computed.
@@ -87,7 +87,7 @@ class MainTests(unittest.TestCase):
 
 
 class FormatterWiringTest(unittest.TestCase):
-    """Assert the parser is WIRED to the shared formatter, not that it re-implements it.
+    """Assert the parser is wired to the shared formatter, not that it re-implements it.
 
     Why this is not a rendering assertion: ``help_formatter.md``, "The version trap".
     """
@@ -115,6 +115,12 @@ class HelpTextTests(unittest.TestCase):
         text = _help_text()
         self.assertIn("omitting it keeps that set", text)
         self.assertNotIn("None leaves", text)
+
+    def test_usage_prints_files_last(self) -> None:
+        # Every argument after --files is a file name, so the usage line that argparse
+        # prints puts it last, as the companion doc's synopsis does.
+        usage = " ".join(sut.build_parser().format_usage().split())
+        self.assertTrue(usage.endswith("[--files FILE [FILE ...]]"), usage)
 
 
 def _parser_error(argv: list[str]) -> str:

@@ -7,11 +7,11 @@ The readers live in ``clidoc_astcli`` and ``clidoc_docread``; what is left here 
 judgment, which is the part with a policy in it. Four rules carry that policy. An option
 in the parser but not the doc's tables and pasted ``--help`` blocks (or the reverse) is an
 unambiguous mismatch and gates. A default that both sides state *numerically* and state
-differently also gates, because a number cannot be a paraphrase -- but reading the real
+differently also gates, because a number cannot be a paraphrase. But reading the real
 default means executing the target, so that rule runs only when the caller opts in, and
 says so in one advisory when it did not. A doc with no option surface at all (no table,
 no pasted ``--help`` block) gates too, since coverage then verifies nothing. Everything
-else -- a prose default, an exit-code difference -- is advisory, because the tool cannot
+else (a prose default, an exit-code difference) is advisory, because the tool cannot
 tell a real drift from a doc written in a style it does not parse, and a gate that
 guesses gets switched off.
 
@@ -69,7 +69,7 @@ def _cell_number(cell: str) -> float | None:
 def _option_default_number(
     option: OptionInfo, rendered: dict[str, str]
 ) -> float | None:
-    """The option's numeric default -- from the live render if present, else the AST."""
+    """The option's numeric default, from the live render if present, else the AST."""
     if option.name in rendered:
         return _cell_number(rendered[option.name])
     if option.has_literal_default and isinstance(option.literal_default, (int, float)):
@@ -132,8 +132,8 @@ def _default_findings(
 ) -> list[Finding]:
     """Gating findings where a purely-numeric documented default clearly contradicts.
 
-    Only checks an option whose default is documented *unambiguously* -- in exactly
-    one arguments table (see :func:`_option_default_cell`) -- so a subparser tool
+    Only checks an option whose default is documented *unambiguously*, in exactly
+    one arguments table (see :func:`_option_default_cell`), so a subparser tool
     that repeats an option across subcommand tables is never falsely flagged.
     """
     findings: list[Finding] = []
@@ -209,7 +209,7 @@ def _missing_doc_finding(
 
 
 def _no_option_surface_finding(md_path: Path) -> Finding:
-    """The GATING finding for a doc with neither an arguments table nor a ``--help`` block.
+    """The gating finding for a doc with neither an arguments table nor a ``--help`` block.
 
     It gates because without either shape the
     coverage check verifies nothing, and an advisory saying so was easy to miss.
@@ -272,7 +272,7 @@ def check_md_mirror(
     """Verify the companion doc mirrors the parser (conservative; see module docstring).
 
     A missing companion doc gates by default: a discovered argparse CLI must
-    ship its doc. ``allow_missing_doc`` downgrades only that one finding to advisory --
+    ship its doc. ``allow_missing_doc`` downgrades only that one finding to advisory;
     every other mirror check is unaffected.
 
     The doc's option surface is the union of its arguments tables and its pasted

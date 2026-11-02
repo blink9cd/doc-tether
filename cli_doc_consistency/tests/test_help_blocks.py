@@ -21,7 +21,7 @@ import cli_doc_consistency as mod  # noqa: E402 - import follows the sys.path bo
 from _fixtures import parse_module  # noqa: E402 - beside this module, via the loader's top_level_dir
 
 # A pasted --help block as a README carries it: aliases, a wrapped help line, an option
-# whose help text mentions ANOTHER option, and a rendered default.
+# whose help text mentions another option, and a rendered default.
 _HELP_BLOCK = textwrap.dedent(
     """\
     # widget
@@ -45,9 +45,9 @@ class ParseHelpBlocksTest(unittest.TestCase):
 
     def test_names_come_from_the_option_column_only(self) -> None:
         (block,) = mod.parse_md_help_blocks(_HELP_BLOCK)
-        # One name per entry, the first LONG string -- what the AST calls the option --
-        # so -p and the --number alias are not names; --json named inside --path's HELP
-        # TEXT is not counted either.
+        # One name per entry, the first long string (what the AST calls the option),
+        # so -p and the --number alias are not names; --json named inside --path's help
+        # text is not counted either.
         self.assertEqual(set(block.options), {"--help", "--path", "--count", "--json"})
 
     def test_rendered_default_is_read(self) -> None:
@@ -87,7 +87,7 @@ class ParseHelpBlocksTest(unittest.TestCase):
         self.assertEqual(set(block.options), {"--x"})
 
     def test_an_inner_fence_inside_the_options_section_does_not_close(self) -> None:
-        # Shorter and other-character fence lines INSIDE the options section. Indented, as
+        # Shorter and other-character fence lines inside the options section. Indented, as
         # section content is, they close neither the fence nor the section, so --z after
         # them is read; --y after the real closer is not.
         md = (
