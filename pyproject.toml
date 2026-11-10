@@ -10,7 +10,7 @@ build-backend = "setuptools.build_meta"
 # The repository's name. The README's title carries it too, so a rename changes both.
 name = "doc-tether"
 # A minor release adds a tool or changes a tool's surface; a patch release changes neither.
-version = "0.3.1"
+version = "0.3.2"
 description = "Checks that keep documentation tethered to the code and commands it describes: ShellCheck for the shell fenced in Markdown, and a command-line tool's docs held to its argparse definition."
 readme = "README.md"
 license = "AGPL-3.0-or-later"

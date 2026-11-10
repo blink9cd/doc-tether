@@ -2,8 +2,9 @@
   "files": {
     ".gitignore": "sha256:9c10f5e80e9fb2f65c94992c5cc656fb90fadd69965cc24e7030f5d9b5f3f580",
     ".pre-commit-hooks.yaml": "sha256:e6601f66b69753a08a502a6f3d6d43da2446eb42cf07ec51f7d7ccaf6c09bef1",
-    "CHANGELOG.md": "sha256:f0daa9b58ca38a27896225d1559c0a7859e4273b9ec02f75e7d2f34d218fd4cb",
-    "LICENSE": "sha256:480bc086cc31abd0ec8598db97abf2a5490bf30613bc209342a4e2c71a0f8b87",
+    "CHANGELOG.md": "sha256:b8c88d3c4c387d479212087dd61e7a51cf46933fe36995cced014edeb3420ddc",
+    "LICENSE": "sha256:57c8ff33c9c0cfc3ef00e650a1cc910d7ee479a8bc509f6c9209a7c2a11399d6",
+    "NOTICE": "sha256:327ceae4f0e5a0b8baa3c5cef657cc5bf1ed0d00964e056974dd774243224489",
     "README.md": "sha256:5deb850a94fc41b04c4eb5f1880d38c058c151b243f4661118ca05fb60ded2bd",
     "argv_budget/argv_budget.md": "sha256:bc8268cbbc334401f7a19f15b00875fe264d6c1bf4130bac0612258c921449fd",
     "argv_budget/argv_budget.py": "sha256:af93aa30e1b2810787cf2f35e9fdcdb14e25773b6f5c2a4cf8403709522b8856",
@@ -69,7 +70,7 @@
     "nothing_examined/nothing_examined.md": "sha256:b11a1a49ff60819e27d2ff94762ba3e0d54dd5c5bee49af78ff5d7c98d74a3d4",
     "nothing_examined/nothing_examined.py": "sha256:bd4bdad95633c7cf261381af15450a3965a2596fc82c6fffe558bb9c62545cac",
     "nothing_examined/test_nothing_examined.py": "sha256:a4459f7e2699586b291ac1dc968d0cd8ac58dd2cc3ef3a022624900b532e7a8d",
-    "pyproject.toml": "sha256:6d0800590cadf31c884276dabfa28a5e9ca883e8c53c05dc726727dedca86935",
+    "pyproject.toml": "sha256:c003ac92d21570b799a4dfc8b6b1932a2959b50b56c3d5818770341a8422c96c",
     "pyproject_config/pyproject_config.md": "sha256:7bd59e9f1f952743bf94b23250623e112698ce0cc84d8aa2d8512ecf149b5842",
     "pyproject_config/pyproject_config.py": "sha256:ec5ccc459b49415df558f064725c46c65bfebf285e23dd1821c60459bc1e2919",
     "pyproject_config/test_pyproject_config.py": "sha256:32fd0d0b68607f222afc75379fcacac31266b86fad15db3a2434bf9c4bfe8319",
@@ -115,6 +116,6 @@
   },
   "name": "doc-tether",
   "schema": 1,
-  "source_commit": "a34e3f49f660cbf6bfd6f0926cf2bfe06d9dbf06",
-  "version": "0.3.1"
+  "source_commit": "9afc032130366c58dfaa87269ce45983b633921e",
+  "version": "0.3.2"
 }
